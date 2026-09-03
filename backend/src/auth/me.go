@@ -12,9 +12,6 @@ import (
 	"gorm.io/gorm"
 )
 
-// meProfile authentifie la requête via le header Authorization: Bearer <jwt>
-// et retourne le profil correspondant. En cas d'échec, écrit la réponse
-// d'erreur et retourne ok=false.
 func meProfile(gdb *gorm.DB, res http.ResponseWriter, req *http.Request) (utils.Profile, bool) {
 	claims, ok := utils.ParseProfileToken(req)
 	if !ok {
