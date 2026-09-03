@@ -7,11 +7,10 @@ on:
     branches: [_access_test]
 
 env:
-  POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
-  POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
-  POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
-  DATABASE_URL: postgres://${{ secrets.POSTGRES_USER }}:${{ secrets.POSTGRES_PASSWORD }}@localhost:5432/${{ secrets.POSTGRES_DB }}?sslmode=disable
-  JWT_SECRET: ${{ secrets.JWT_SECRET }}
+  POSTGRES_USER: ${{ secrets.POSTGRES_USER || 'jibjob' }}
+  POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD || 'jibjob' }}
+  POSTGRES_DB: ${{ secrets.POSTGRES_DB || 'jibjob' }}
+  JWT_SECRET: ${{ secrets.JWT_SECRET || 'ci-test-secret' }}
   PORT: "8080"
 
 jobs:
@@ -22,16 +21,23 @@ jobs:
       postgres:
         image: postgres:16
         env:
-          POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
-          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
-          POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
+          POSTGRES_USER: ${{ secrets.POSTGRES_USER || 'jibjob' }}
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD || 'jibjob' }}
+          POSTGRES_DB: ${{ secrets.POSTGRES_DB || 'jibjob' }}
         ports:
           - 5432:5432
         options: >-
-          --health-cmd "pg_isready -U ${{ secrets.POSTGRES_USER }} -d ${{ secrets.POSTGRES_DB }}"
+          --health-cmd pg_isready
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
+
+    env:
+      DATABASE_URL: postgres://${{ secrets.POSTGRES_USER || 'jibjob' }}:${{ secrets.POSTGRES_PASSWORD || 'jibjob' }}@localhost:5432/${{ secrets.POSTGRES_DB || 'jibjob' }}?sslmode=disable
+
+    defaults:
+      run:
+        working-directory: backend
 
     steps:
       - uses: actions/checkout@v4
@@ -39,17 +45,19 @@ jobs:
       - uses: actions/setup-go@v5
         with:
           go-version: '1.25'
+          cache-dependency-path: backend/go.sum
 
       - name: Install dependencies
         run: go mod download
 
-      - name: Run migrations
-        run: |
-          go run ./cmd/migrate up
+      - name: Install golang-migrate
+        run: go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@latest
 
-      - name: Seed demo accounts
-        run: |
-          go run ./cmd/seed
+      - name: Run migrations
+        run: migrate -path ../database/migrations -database "$DATABASE_URL" up
+
+      - name: Vet
+        run: go vet ./...
 
       - name: Run tests
         run: go test ./...
@@ -61,5 +69,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: jibjob-server
-          path: dist/jibjob-server
+          path: backend/dist/jibjob-server
           retention-days: 7
