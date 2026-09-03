@@ -2,6 +2,10 @@ name: Build
 
 on:
   push:
+    branches: [dev, _access_test]
+  pull_request:
+    branches: [_access_test]
+
     branches: [dev]
   pull_request:
     branches: [_access_test]
@@ -17,10 +21,25 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
+    defaults:
+      run:
+        working-directory: backend
+
+    env:
+      POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
+      POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+      POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
+      DATABASE_URL: postgres://${{ secrets.POSTGRES_USER }}:${{ secrets.POSTGRES_PASSWORD }}@localhost:5432/${{ secrets.POSTGRES_DB }}?sslmode=disable
+      JWT_SECRET: ${{ secrets.JWT_SECRET }}
+      PORT: "8080"
+
     services:
       postgres:
         image: postgres:16
         env:
+          POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
           POSTGRES_USER: ${{ secrets.POSTGRES_USER || 'jibjob' }}
           POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD || 'jibjob' }}
           POSTGRES_DB: ${{ secrets.POSTGRES_DB || 'jibjob' }}
@@ -50,6 +69,10 @@ jobs:
       - name: Install dependencies
         run: go mod download
 
+      - name: Run migrations
+        run: |
+          go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@latest
+          migrate -database "$DATABASE_URL" -path ../database/migrations up
       - name: Install golang-migrate
         run: go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@latest
 
