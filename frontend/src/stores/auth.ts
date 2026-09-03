@@ -62,6 +62,45 @@ async function login(mail: string, password: string) {
   })
 }
 
+export interface MeProfile {
+  id: string
+  name: string
+  email: string
+  role: string
+  dateNaissance: string
+  skills: string[]
+  sector: string
+  location: string
+  statutCertification: string
+  createdAt: string
+}
+
+/** GET /auth/me -> profil complet de l'utilisateur connecté. */
+async function fetchMe(): Promise<MeProfile> {
+  const res = await fetch('/auth/me', { headers: authHeader() })
+  const body = await res.json().catch(() => ({}))
+  if (!res.ok) {
+    throw new Error(body.error ?? `Erreur ${res.status}`)
+  }
+  const me: MeProfile = {
+    id: String(body.id ?? ''),
+    name: body.identite ?? '',
+    email: body.email ?? '',
+    role: body.role ?? 'candidate',
+    dateNaissance: body.date_naissance ?? '',
+    skills: Array.isArray(body.competences) ? body.competences : [],
+    sector: body.secteur ?? '',
+    location: body.localisation ?? '',
+    statutCertification: body.statut_certification ?? '',
+    createdAt: body.created_at ?? '',
+  }
+  // garde le store user en phase avec le backend
+  if (state.user) {
+    setUser({ ...state.user, name: me.name || state.user.name, email: me.email || state.user.email, role: me.role })
+  }
+  return me
+}
+
 function logout() {
   state.user = null
   persist()
@@ -79,6 +118,7 @@ export function useAuth() {
     token: computed(() => state.user?.token ?? ''),
     isAuthenticated: computed(() => state.user !== null),
     login,
+    fetchMe,
     logout,
     setUser,
     authHeader,

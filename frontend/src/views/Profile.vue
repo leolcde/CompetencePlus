@@ -1,15 +1,40 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { ArrowLeft, MapPin, MessageSquare, AlertTriangle, CheckCircle2 } from 'lucide-vue-next'
 import { MOCK_PROFILES } from '../assets/data/mock'
+import { useAuth } from '../stores/auth'
 import JebBadge from '../assets/JebBadge.vue'
 
 const route = useRoute()
+const { user, isAuthenticated, fetchMe } = useAuth()
 const id = String(route.params.id)
-const profile = MOCK_PROFILES.find(p => p.id === id) ?? MOCK_PROFILES[0]
-const isMyProfile = id === '1'
-const hasConsent = ref(profile.hasConsent)
+const base = MOCK_PROFILES.find(p => p.id === id) ?? MOCK_PROFILES[0]
+const profile = ref({ ...base })
+const isMyProfile = computed(() => isAuthenticated.value && id === user.value?.id)
+const hasConsent = ref(base.hasConsent)
+const loading = ref(false)
+const error = ref('')
+
+onMounted(async () => {
+  if (!isMyProfile.value) return
+  loading.value = true
+  error.value = ''
+  try {
+    const me = await fetchMe()
+    profile.value = {
+      ...profile.value,
+      name: me.name || profile.value.name,
+      job: me.sector || profile.value.job,
+      city: me.location || profile.value.city,
+      skills: me.skills.length ? me.skills : profile.value.skills,
+    }
+  } catch (e) {
+    error.value = e instanceof Error ? e.message : 'Impossible de charger votre profil'
+  } finally {
+    loading.value = false
+  }
+})
 </script>
 
 <template>
@@ -18,6 +43,9 @@ const hasConsent = ref(profile.hasConsent)
       <ArrowLeft class="w-4 h-4" />
       Retour au feed
     </RouterLink>
+
+    <p v-if="loading" class="mb-4 text-sm text-text-muted font-marianne">Chargement de votre profil…</p>
+    <p v-if="error" class="mb-4 border border-action bg-surface text-action font-marianne text-sm p-3">{{ error }}</p>
 
     <div class="bg-white border border-border">
       <!-- Zone vidéo -->

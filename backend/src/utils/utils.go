@@ -30,6 +30,13 @@ type Profile struct {
 	CreatedAt    time.Time      `json:"created_at"`
 }
 
+type Video struct {
+	ID        uint      `json:"id" gorm:"primaryKey"`
+	ProfileID uint      `json:"-"`
+	URL       string    `json:"url"`
+	CreatedAt time.Time `json:"created_at"`
+}
+
 // LOGIN
 
 type LoginRequest struct {
@@ -46,4 +53,19 @@ type Claims struct {
 	UserID string `json:"user_id"`
 	Role   string `json:"role"`
 	jwt.RegisteredClaims
+}
+
+// Login
+
+type MeResponse struct {
+	ID                  int64    `json:"id"`
+	Email               string   `json:"email"`
+	Role                string   `json:"role"`
+	DateNaissance       string   `json:"date_naissance"`
+	Identite            string   `json:"identite,omitempty"`
+	Competences         []string `json:"competences,omitempty"`
+	Secteur             string   `json:"secteur,omitempty"`
+	Localisation        string   `json:"localisation,omitempty"`
+	StatutCertification string   `json:"statut_certification,omitempty"`
+	CreatedAt           string   `json:"created_at"`
 }

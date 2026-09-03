@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, reactive, ref } from 'vue'
+import { computed, onMounted, reactive, ref } from 'vue'
 import {
   CheckCircle2,
   AlertTriangle,
@@ -8,13 +8,17 @@ import {
   Video,
 } from 'lucide-vue-next'
 import { MOCK_PROFILES } from '../assets/data/mock'
+import { useAuth } from '../stores/auth'
 import JebBadge from '../assets/JebBadge.vue'
 
-// Profil connecté (démo : le profil "1")
-const source = MOCK_PROFILES.find((p) => p.id === '1') ?? MOCK_PROFILES[0]
+const { user, fetchMe } = useAuth()
+
+// Champs non encore fournis par le backend : fallback sur le mock.
+const source = MOCK_PROFILES.find((p) => p.id === user.value?.id) ?? MOCK_PROFILES[0]
 
 const form = reactive({
-  name: source.name,
+  id: user.value?.id ?? source.id,
+  name: user.value?.name || source.name,
   job: source.job,
   city: source.city,
   skills: source.skills.join(', '),
@@ -23,6 +27,20 @@ const form = reactive({
 const hasConsent = ref(source.hasConsent)
 const saved = ref(false)
 const profileViews = 128
+const loadError = ref('')
+
+onMounted(async () => {
+  try {
+    const me = await fetchMe()
+    form.id = me.id || form.id
+    form.name = me.name || form.name
+    form.job = me.sector || form.job
+    form.city = me.location || form.city
+    if (me.skills.length) form.skills = me.skills.join(', ')
+  } catch (e) {
+    loadError.value = e instanceof Error ? e.message : 'Impossible de charger votre profil'
+  }
+})
 
 const skillList = computed(() =>
   form.skills
@@ -48,17 +66,24 @@ function save() {
       <div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
           <p class="font-marianne font-bold text-action text-xs uppercase tracking-wide mb-2">
-            Espace personnel
+            Paramètres du profil
           </p>
           <h1 class="text-3xl sm:text-4xl font-marianne font-black text-primary tracking-tight">
             {{ form.name }}
           </h1>
           <p class="text-text-muted font-spectral mt-1">{{ form.job }} · {{ form.city }}</p>
         </div>
-        <RouterLink :to="`/profil/${source.id}`" class="btn-secondary text-sm">
+        <RouterLink :to="`/profil/${form.id}`" class="btn-secondary text-sm">
           Voir mon profil public
         </RouterLink>
       </div>
+
+      <p
+        v-if="loadError"
+        class="border border-action bg-surface text-action font-marianne text-sm p-3"
+      >
+        {{ loadError }}
+      </p>
 
       <!-- Statistiques -->
       <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
