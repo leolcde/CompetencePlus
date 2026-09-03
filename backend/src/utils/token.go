@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"encoding/json"
 	"net/http"
 	"os"
 	"strings"
@@ -31,4 +32,23 @@ func ParseProfileToken(req *http.Request) (*Claims, bool) {
 		return nil, false
 	}
 	return &claims, true
+}
+
+func RequireRole(role Role, next http.HandlerFunc) http.HandlerFunc {
+	return func(res http.ResponseWriter, req *http.Request) {
+		res.Header().Set("Content-Type", "application/json")
+
+		claims, ok := ParseProfileToken(req)
+		if !ok {
+			res.WriteHeader(http.StatusUnauthorized)
+			json.NewEncoder(res).Encode(map[string]string{"error": "unauthorized"})
+			return
+		}
+		if Role(claims.Role) != role {
+			res.WriteHeader(http.StatusForbidden)
+			json.NewEncoder(res).Encode(map[string]string{"error": "forbidden"})
+			return
+		}
+		next(res, req)
+	}
 }

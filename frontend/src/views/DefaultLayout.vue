@@ -6,7 +6,9 @@ import { useAuth } from '../stores/auth'
 
 const route = useRoute()
 const router = useRouter()
-const { user, isAuthenticated, logout } = useAuth()
+const { user, isAuthenticated, isRecruiter, logout } = useAuth()
+
+const roleLabel = computed(() => (isRecruiter.value ? 'Recruteur' : 'Candidat'))
 const open = ref(false)
 const loginDropdown = ref(false)
 const profileDropdown = ref(false)
@@ -104,6 +106,12 @@ function onLogout() {
               @click="profileDropdown = !profileDropdown"
             >
               {{ user?.name || user?.email }}
+              <span
+                class="px-1.5 py-0.5 text-[10px] uppercase tracking-wide font-bold border"
+                :class="isRecruiter ? 'border-primary text-primary' : 'border-action text-action'"
+              >
+                {{ roleLabel }}
+              </span>
               <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
               </svg>
@@ -113,6 +121,9 @@ function onLogout() {
               class="absolute right-0 top-full mt-2 w-56 bg-white border border-border shadow-md z-50"
               @mouseleave="profileDropdown = false"
             >
+              <p class="px-4 py-2 text-xs font-marianne text-text-muted border-b border-border">
+                Connecté en tant que <span class="font-bold text-primary">{{ roleLabel }}</span>
+              </p>
               <RouterLink
                 :to="{ name: 'dashboard' }"
                 class="flex items-center gap-2 px-4 py-3 font-marianne text-sm text-primary hover:bg-surface"

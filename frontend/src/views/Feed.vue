@@ -8,7 +8,7 @@ import { useAuth } from '../stores/auth'
 
 const router = useRouter()
 const route = useRoute()
-const { isAuthenticated } = useAuth()
+const { isAuthenticated, can } = useAuth()
 
 const showAuthModal = ref(false)
 
@@ -17,6 +17,10 @@ function requireAuth(): boolean {
   showAuthModal.value = true
   return false
 }
+
+// connecté mais rôle sans le droit -> action ignorée
+const canLike = computed(() => !isAuthenticated.value || can.value.like)
+const canContact = computed(() => !isAuthenticated.value || can.value.contact)
 
 function chooseType(type: 'candidat' | 'recruteur') {
   showAuthModal.value = false
@@ -56,6 +60,7 @@ function persist() {
 
 function toggleLike(uid: string) {
   if (!requireAuth()) return
+  if (!can.value.like) return
   if (liked.has(uid)) liked.delete(uid)
   else liked.add(uid)
   persist()
@@ -65,6 +70,7 @@ function toggleLike(uid: string) {
 const burst = ref<string | null>(null)
 function doubleLike(uid: string) {
   if (!requireAuth()) return
+  if (!can.value.like) return
   if (!liked.has(uid)) toggleLike(uid)
   burst.value = uid
   setTimeout(() => (burst.value = null), 600)
@@ -132,7 +138,12 @@ const total = computed(() => feed.length)
 
       <!-- Rail d'actions droite -->
       <div class="absolute right-2 sm:right-6 bottom-16 sm:bottom-24 flex flex-col items-center gap-4 sm:gap-6 z-10 text-white">
-        <button class="flex flex-col items-center group" @click="toggleLike(item.uid)">
+        <button
+          class="flex flex-col items-center group"
+          :class="{ 'opacity-40 cursor-not-allowed': !canLike }"
+          :title="canLike ? 'Aimer' : 'Réservé aux recruteurs'"
+          @click="toggleLike(item.uid)"
+        >
           <span
             class="w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-white/15 backdrop-blur-sm border border-white/20 flex items-center justify-center group-hover:bg-white/25 transition-colors"
           >
@@ -143,7 +154,12 @@ const total = computed(() => feed.length)
           </span>
         </button>
 
-        <button class="flex flex-col items-center group" @click="requireAuth()">
+        <button
+          class="flex flex-col items-center group"
+          :class="{ 'opacity-40 cursor-not-allowed': !canContact }"
+          :title="canContact ? 'Contacter' : 'Réservé aux recruteurs'"
+          @click="canContact && requireAuth()"
+        >
           <span
             class="w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-white/15 backdrop-blur-sm border border-white/20 flex items-center justify-center group-hover:bg-white/25 transition-colors"
           >

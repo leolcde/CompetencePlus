@@ -55,17 +55,35 @@ type Claims struct {
 	jwt.RegisteredClaims
 }
 
-// Login
-
 type MeResponse struct {
-	ID                  int64    `json:"id"`
-	Email               string   `json:"email"`
-	Role                string   `json:"role"`
-	DateNaissance       string   `json:"date_naissance"`
-	Identite            string   `json:"identite,omitempty"`
-	Competences         []string `json:"competences,omitempty"`
-	Secteur             string   `json:"secteur,omitempty"`
-	Localisation        string   `json:"localisation,omitempty"`
-	StatutCertification string   `json:"statut_certification,omitempty"`
-	CreatedAt           string   `json:"created_at"`
+	ID                  int64       `json:"id"`
+	Email               string      `json:"email"`
+	Role                string      `json:"role"`
+	DateNaissance       string      `json:"date_naissance"`
+	Identite            string      `json:"identite,omitempty"`
+	Competences         []string    `json:"competences,omitempty"`
+	Secteur             string      `json:"secteur,omitempty"`
+	Localisation        string      `json:"localisation,omitempty"`
+	StatutCertification string      `json:"statut_certification,omitempty"`
+	CreatedAt           string      `json:"created_at"`
+	Permissions         Permissions `json:"permissions"`
+}
+
+// PERMISSIONS
+
+type Permissions struct {
+	CanPublishVideo bool `json:"can_publish_video"`
+	CanContact      bool `json:"can_contact"`
+	CanLike         bool `json:"can_like"`
+}
+
+func PermissionsFor(role Role) Permissions {
+	switch role {
+	case Recruiter:
+		return Permissions{CanContact: true, CanLike: true}
+	case Candidate:
+		return Permissions{CanPublishVideo: true}
+	default:
+		return Permissions{}
+	}
 }

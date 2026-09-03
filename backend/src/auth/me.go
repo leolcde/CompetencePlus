@@ -65,6 +65,7 @@ func Me(gdb *gorm.DB) http.HandlerFunc {
 			Secteur:       profile.Sector,
 			Localisation:  profile.Location,
 			CreatedAt:     profile.CreatedAt.Format(time.RFC3339),
+			Permissions:   utils.PermissionsFor(profile.Role),
 		})
 	}
 }

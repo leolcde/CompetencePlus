@@ -7,7 +7,7 @@ import { useAuth } from '../stores/auth'
 import JebBadge from '../assets/JebBadge.vue'
 
 const route = useRoute()
-const { user, isAuthenticated, fetchMe } = useAuth()
+const { user, isAuthenticated, fetchMe, can } = useAuth()
 const id = String(route.params.id)
 const base = MOCK_PROFILES.find(p => p.id === id) ?? MOCK_PROFILES[0]
 const profile = ref({ ...base })
@@ -16,12 +16,22 @@ const hasConsent = ref(base.hasConsent)
 const loading = ref(false)
 const error = ref('')
 
+// rôle : connu pour son propre profil (via /auth/me) ou si le profil le porte
+const profileRole = ref<string>('')
+const roleLabel = computed(() => {
+  const r = profileRole.value || (isMyProfile.value ? user.value?.role : '')
+  if (r === 'recruiter') return 'Recruteur'
+  if (r === 'candidate') return 'Candidat'
+  return ''
+})
+
 onMounted(async () => {
   if (!isMyProfile.value) return
   loading.value = true
   error.value = ''
   try {
     const me = await fetchMe()
+    profileRole.value = me.role
     profile.value = {
       ...profile.value,
       name: me.name || profile.value.name,
@@ -72,7 +82,16 @@ onMounted(async () => {
       <div class="p-8 md:p-12">
         <div class="flex flex-col md:flex-row justify-between items-start gap-8 mb-12">
           <div>
-            <h1 class="text-3xl sm:text-4xl font-marianne font-black text-primary mb-2 tracking-tight">{{ profile.name }}</h1>
+            <h1 class="text-3xl sm:text-4xl font-marianne font-black text-primary mb-2 tracking-tight flex items-center gap-3 flex-wrap">
+              {{ profile.name }}
+              <span
+                v-if="roleLabel"
+                class="px-2 py-0.5 text-xs uppercase tracking-wide font-bold border"
+                :class="roleLabel === 'Recruteur' ? 'border-primary text-primary' : 'border-action text-action'"
+              >
+                {{ roleLabel }}
+              </span>
+            </h1>
             <p class="text-xl font-marianne text-text-main font-medium mb-6">{{ profile.job }}</p>
             <div class="flex items-center gap-2 text-text-muted font-marianne text-sm">
               <MapPin class="w-4 h-4" />
@@ -80,11 +99,20 @@ onMounted(async () => {
             </div>
           </div>
 
-          <div class="flex flex-col gap-4 min-w-[200px] shrink-0">
-            <button class="btn-action w-full flex items-center justify-center gap-2">
+          <div v-if="!isMyProfile" class="flex flex-col gap-4 min-w-[200px] shrink-0">
+            <button
+              v-if="can.contact"
+              class="btn-action w-full flex items-center justify-center gap-2"
+            >
               <MessageSquare class="w-4 h-4" />
               Contacter
             </button>
+            <p
+              v-else
+              class="w-full text-center text-text-muted font-marianne text-xs border border-border p-3"
+            >
+              Seuls les recruteurs peuvent contacter un profil.
+            </p>
 
             <div v-if="profile.isCertified" class="w-full p-4 border border-success/30 bg-success/5 flex flex-col items-center gap-2">
               <JebBadge :large="true" />
@@ -111,7 +139,7 @@ onMounted(async () => {
     </div>
 
     <!-- Zone de gestion (candidat uniquement) -->
-    <div v-if="isMyProfile" class="mt-12 p-8 border border-border bg-surface">
+    <div v-if="isMyProfile && can.publishVideo" class="mt-12 p-8 border border-border bg-surface">
       <h2 class="text-xl font-marianne font-bold text-primary mb-6">Gestion de ma vidéo (Zone Privée)</h2>
 
       <div class="bg-white p-6 border border-border">
