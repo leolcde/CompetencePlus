@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, reactive, ref } from 'vue'
+import { computed, onMounted, reactive, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { Heart, Lock, MapPin, MessageSquare, Share2, VideoOff } from 'lucide-vue-next'
 import { MOCK_PROFILES } from '../assets/data/mock'
@@ -27,16 +27,69 @@ function chooseType(type: 'candidat' | 'recruteur') {
   router.push({ name: 'login', query: { type, redirect: route.fullPath } })
 }
 
-// On étoffe le feed à partir des profils mock (pas de backend)
+interface FeedItem {
+  uid: string
+  id: string
+  name: string
+  job: string
+  city: string
+  skills: string[]
+  isCertified: boolean
+  score: number | null
+  videoUrl: string
+  hasConsent: boolean
+  likes: number
+}
+
 const baseCount: Record<string, number> = { '1': 342, '2': 187, '3': 54 }
 
-const feed = MOCK_PROFILES.flatMap((p, batch) =>
+// Feed mock affiché immédiatement, remplacé par GET /profils au montage.
+const mockFeed: FeedItem[] = MOCK_PROFILES.flatMap((p, batch) =>
   [0, 1, 2].map((k) => ({
-    ...p,
     uid: `${p.id}-${batch}-${k}`,
+    id: p.id,
+    name: p.name,
+    job: p.job,
+    city: p.city,
+    skills: p.skills,
+    isCertified: p.isCertified,
+    score: p.score,
+    videoUrl: p.videoUrl,
+    hasConsent: p.hasConsent,
     likes: (baseCount[p.id] ?? 20) + k * 7,
   })),
 )
+
+const feed = ref<FeedItem[]>(mockFeed)
+
+onMounted(async () => {
+  try {
+    const res = await fetch('/profils')
+    if (!res.ok) return
+    const rows = await res.json()
+    if (!Array.isArray(rows) || rows.length === 0) return
+    feed.value = rows.map((r: Record<string, unknown>): FeedItem => {
+      const id = String(r.id ?? '')
+      return {
+        uid: id,
+        id,
+        name: (r.name as string) || 'Profil',
+        job: (r.job as string) || 'Profil ProfilsActifs',
+        city: (r.city as string) || 'France',
+        skills: Array.isArray(r.skills) ? (r.skills as string[]) : [],
+        isCertified: Boolean(r.isCertified),
+        score: typeof r.score === 'number' ? r.score : null,
+        videoUrl:
+          (r.videoUrl as string) ||
+          'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=800&h=600&fit=crop&auto=format',
+        hasConsent: r.hasConsent === undefined ? true : Boolean(r.hasConsent),
+        likes: baseCount[id] ?? 20,
+      }
+    })
+  } catch {
+    /* on garde le feed mock */
+  }
+})
 
 const LS_KEY = 'feed_likes'
 
@@ -76,7 +129,7 @@ function doubleLike(uid: string) {
   setTimeout(() => (burst.value = null), 600)
 }
 
-const total = computed(() => feed.length)
+const total = computed(() => feed.value.length)
 </script>
 
 <template>

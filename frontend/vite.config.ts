@@ -16,6 +16,10 @@ export default defineConfig({
         target: process.env.VITE_API_URL ?? 'http://backend:8080',
         changeOrigin: true,
       },
+      '/profils': {
+        target: process.env.VITE_API_URL ?? 'http://backend:8080',
+        changeOrigin: true,
+      },
     },
   },
 })

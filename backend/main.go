@@ -8,6 +8,7 @@ import (
 	"os"
 
 	"jibjob/src/auth"
+	"jibjob/src/profils"
 	utils "jibjob/src/utils"
 
 	"gorm.io/gorm"
@@ -55,6 +56,7 @@ func main() {
 	http.HandleFunc("/auth/register", auth.Register(gdb))
 	http.HandleFunc("/auth/login", auth.Login(gdb))
 	http.HandleFunc("/auth/me", auth.Me(gdb))
+	http.HandleFunc("/profils", profils.List(gdb))
 
 	port := os.Getenv("PORT")
 	if port == "" {
