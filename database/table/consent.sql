@@ -1,7 +1,0 @@
-
-CREATE TABLE IF NOT EXISTS consents (
-    id SERIAL PRIMARY KEY,
-    profile_id INTEGER NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
-    text_version VARCHAR(50) NOT NULL,
-    accepted_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
