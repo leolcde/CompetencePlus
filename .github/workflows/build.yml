@@ -6,6 +6,17 @@ on:
   pull_request:
     branches: [_access_test]
 
+    branches: [dev]
+  pull_request:
+    branches: [_access_test]
+
+env:
+  POSTGRES_USER: ${{ secrets.POSTGRES_USER || 'jibjob' }}
+  POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD || 'jibjob' }}
+  POSTGRES_DB: ${{ secrets.POSTGRES_DB || 'jibjob' }}
+  JWT_SECRET: ${{ secrets.JWT_SECRET || 'ci-test-secret' }}
+  PORT: "8080"
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -29,6 +40,9 @@ jobs:
           POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
           POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
           POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
+          POSTGRES_USER: ${{ secrets.POSTGRES_USER || 'jibjob' }}
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD || 'jibjob' }}
+          POSTGRES_DB: ${{ secrets.POSTGRES_DB || 'jibjob' }}
         ports:
           - 5432:5432
         options: >-
@@ -37,12 +51,20 @@ jobs:
           --health-timeout 5s
           --health-retries 5
 
+    env:
+      DATABASE_URL: postgres://${{ secrets.POSTGRES_USER || 'jibjob' }}:${{ secrets.POSTGRES_PASSWORD || 'jibjob' }}@localhost:5432/${{ secrets.POSTGRES_DB || 'jibjob' }}?sslmode=disable
+
+    defaults:
+      run:
+        working-directory: backend
+
     steps:
       - uses: actions/checkout@v4
 
       - uses: actions/setup-go@v5
         with:
           go-version: '1.25'
+          cache-dependency-path: backend/go.sum
 
       - name: Install dependencies
         run: go mod download
@@ -51,6 +73,11 @@ jobs:
         run: |
           go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@latest
           migrate -database "$DATABASE_URL" -path ../database/migrations up
+      - name: Install golang-migrate
+        run: go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@latest
+
+      - name: Run migrations
+        run: migrate -path ../database/migrations -database "$DATABASE_URL" up
 
       - name: Vet
         run: go vet ./...
