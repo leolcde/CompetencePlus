@@ -1,0 +1,38 @@
+export const MOCK_PROFILES = [
+  {
+    id: "1",
+    name: "Marianne Lrs",
+    job: "Chargée de communication",
+    city: "Lyon",
+    isCertified: true,
+    score: 95,
+    videoUrl: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=800&h=600&fit=crop&auto=format",
+    skills: ["Communication externe", "Réseaux sociaux", "Rédaction web"],
+    hasConsent: true,
+    consentDate: "12 octobre 2023",
+  },
+  {
+    id: "2",
+    name: "Leo Lcrd",
+    job: "Responsable logistique",
+    city: "Lille",
+    isCertified: true,
+    score: 88,
+    videoUrl: "https://images.unsplash.com/photo-1556157382-97eda2d62296?w=800&h=600&fit=crop&auto=format",
+    skills: ["Supply Chain", "Management d'équipe", "Optimisation"],
+    hasConsent: true,
+    consentDate: "05 novembre 2023",
+  },
+  {
+    id: "3",
+    name: "Kevser Ak",
+    job: "Directrice des Ressources Humaines",
+    city: "Nantes",
+    isCertified: false,
+    score: null,
+    videoUrl: "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=800&h=600&fit=crop&auto=format",
+    skills: ["Recrutement", "Formation", "Droit du travail"],
+    hasConsent: false,
+    consentDate: null,
+  }
+]

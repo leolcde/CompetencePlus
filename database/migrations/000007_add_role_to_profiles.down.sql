@@ -1,0 +1,3 @@
+DROP INDEX IF EXISTS idx_profiles_role;
+ALTER TABLE profiles DROP COLUMN IF EXISTS role;
+DROP TYPE IF EXISTS user_role;

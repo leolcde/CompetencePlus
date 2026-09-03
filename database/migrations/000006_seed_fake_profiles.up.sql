@@ -1,0 +1,6 @@
+INSERT INTO profiles (name, email, password_hash, date_of_birth, skills, sector, location, video_url) VALUES
+('Mariam Mariam', 'mariam@epi.com', '$2a$10$examplehashedpassword1', '1998-03-12', ARRAY['Go', 'PostgreSQL', 'Docker'], 'Tech', 'Strasbourg', 'https://www.youtube.com/watch?v=dQw4w9WgXcQ'),
+('Kevser Kevser', 'kevser@epi.com', '$2a$10$examplehashedpassword2', '1995-07-24', ARRAY['Vue.js', 'UX Design', 'Figma'], 'Design', 'Lyon', 'https://vimeo.com/76979871'),
+('Léo Léo', 'leo@epi.com', '$2a$10$examplehashedpassword3', '2000-11-02', ARRAY['Python', 'Data Analysis', 'SQL'], 'Data', 'Paris', 'https://www.youtube.com/watch?v=aqz-KE-bpKQ'),
+('Martin Martin', 'Martin@epi.com', '$2a$10$examplehashedpassword4', '1997-05-19', ARRAY['React', 'Node.js', 'MongoDB'], 'Tech', 'Bordeaux', 'https://vimeo.com/148751763'),
+('Swag Man', 'swagman@epi.com', '$2a$10$examplehashedpassword5', '1999-09-08', ARRAY['Marketing digital', 'SEO', 'Copywriting'], 'Marketing', 'Nantes', 'https://www.youtube.com/watch?v=jNQXAC9IVRw');

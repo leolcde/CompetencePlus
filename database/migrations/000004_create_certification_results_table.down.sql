@@ -1,0 +1,1 @@
+DROP TABLE certification_results;
