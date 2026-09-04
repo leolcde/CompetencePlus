@@ -87,3 +87,11 @@ func PermissionsFor(role Role) Permissions {
 		return Permissions{}
 	}
 }
+
+// Or renvoie v, ou fallback si v est vide.
+func Or(v, fallback string) string {
+	if v == "" {
+		return fallback
+	}
+	return v
+}

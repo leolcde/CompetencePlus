@@ -26,7 +26,8 @@ const form = reactive({
   skills: source.skills.join(', '),
 })
 
-const hasConsent = ref(source.hasConsent)
+// pas de vraies vidéos pour l'instant
+const hasConsent = ref(false)
 const saved = ref(false)
 const profileViews = 128
 const contactedCount = 0

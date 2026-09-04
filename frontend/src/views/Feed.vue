@@ -54,8 +54,9 @@ const mockFeed: FeedItem[] = MOCK_PROFILES.flatMap((p, batch) =>
     skills: p.skills,
     isCertified: p.isCertified,
     score: p.score,
-    videoUrl: p.videoUrl,
-    hasConsent: p.hasConsent,
+    videoUrl: '',
+    // pas de vraies vidéos pour l'instant -> placeholder "non disponible"
+    hasConsent: false,
     likes: (baseCount[p.id] ?? 20) + k * 7,
   })),
 )
@@ -79,10 +80,8 @@ onMounted(async () => {
         skills: Array.isArray(r.skills) ? (r.skills as string[]) : [],
         isCertified: Boolean(r.isCertified),
         score: typeof r.score === 'number' ? r.score : null,
-        videoUrl:
-          (r.videoUrl as string) ||
-          'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=800&h=600&fit=crop&auto=format',
-        hasConsent: r.hasConsent === undefined ? true : Boolean(r.hasConsent),
+        videoUrl: (r.videoUrl as string) || '',
+        hasConsent: Boolean(r.hasConsent) && Boolean(r.videoUrl),
         likes: baseCount[id] ?? 20,
       }
     })
@@ -151,8 +150,8 @@ const total = computed(() => feed.value.length)
       </template>
       <div v-else class="absolute inset-0 bg-surface flex flex-col items-center justify-center text-text-muted">
         <VideoOff class="w-12 h-12 mb-3" />
-        <p class="font-marianne font-bold">Vidéo masquée</p>
-        <p class="font-spectral text-sm">Consentement non accordé</p>
+        <p class="font-marianne font-bold">Vidéo non disponible</p>
+        <p class="font-spectral text-sm">Aucune présentation pour ce profil</p>
       </div>
 
       <!-- coeur "burst" -->
@@ -166,7 +165,7 @@ const total = computed(() => feed.value.length)
         <div class="mb-3">
           <JebBadge v-if="item.isCertified" />
         </div>
-        <h2 class="text-2xl sm:text-3xl font-marianne font-black tracking-tight drop-shadow">{{ item.name }}</h2>
+        <h2 class="text-2xl sm:text-3xl font-marianne font-white tracking-tight drop-shadow">{{ item.name }}</h2>
         <p class="font-marianne font-medium text-white/90 mb-2">{{ item.job }}</p>
         <p class="font-marianne text-sm text-white/70 flex items-center gap-1.5 mb-4">
           <MapPin class="w-3.5 h-3.5" />

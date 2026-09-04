@@ -10,9 +10,8 @@ import (
 )
 
 const (
-	defaultJob   = "Profil ProfilsActifs"
-	defaultCity  = "France"
-	defaultVideo = "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=800&h=600&fit=crop&auto=format"
+	defaultJob  = "Profil ProfilsActifs"
+	defaultCity = "France"
 )
 
 type feedProfile struct {
@@ -26,13 +25,6 @@ type feedProfile struct {
 	Score       int      `json:"score"`
 	VideoUrl    string   `json:"videoUrl"`
 	HasConsent  bool     `json:"hasConsent"`
-}
-
-func or(v, fallback string) string {
-	if v == "" {
-		return fallback
-	}
-	return v
 }
 
 // GET /profils -> [ { id, name, job, city, skills, role, ... }, ... ]
@@ -63,24 +55,21 @@ func List(gdb *gorm.DB) http.HandlerFunc {
 				skills = []string{}
 			}
 			videoURL, hasVideo := videoByProfile[p.ID]
-			if !hasVideo {
-				videoURL = defaultVideo
-			}
 			role := string(p.Role)
 			if role == "" {
 				role = string(utils.Candidate)
 			}
 			out = append(out, feedProfile{
 				ID:          p.ID,
-				Name:        or(p.Name, "Profil sans nom"),
-				Job:         or(p.Sector, defaultJob),
-				City:        or(p.Location, defaultCity),
+				Name:        utils.Or(p.Name, "Profil sans nom"),
+				Job:         utils.Or(p.Sector, defaultJob),
+				City:        utils.Or(p.Location, defaultCity),
 				Skills:      skills,
 				Role:        role,
 				IsCertified: false,
 				Score:       0,
 				VideoUrl:    videoURL,
-				HasConsent:  true,
+				HasConsent:  hasVideo,
 			})
 		}
 

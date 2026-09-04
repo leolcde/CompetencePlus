@@ -57,6 +57,7 @@ func main() {
 	http.HandleFunc("/auth/login", auth.Login(gdb))
 	http.HandleFunc("/auth/me", auth.Me(gdb))
 	http.HandleFunc("/profils", profils.List(gdb))
+	http.HandleFunc("/profils/{id}", profils.Detail(gdb))
 
 	port := os.Getenv("PORT")
 	if port == "" {

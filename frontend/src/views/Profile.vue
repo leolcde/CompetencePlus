@@ -7,12 +7,13 @@ import { useAuth } from '../stores/auth'
 import JebBadge from '../assets/JebBadge.vue'
 
 const route = useRoute()
-const { user, isAuthenticated, fetchMe, can } = useAuth()
+const { user, isAuthenticated, can } = useAuth()
 const id = String(route.params.id)
 const base = MOCK_PROFILES.find(p => p.id === id) ?? MOCK_PROFILES[0]
 const profile = ref({ ...base })
 const isMyProfile = computed(() => isAuthenticated.value && id === user.value?.id)
-const hasConsent = ref(base.hasConsent)
+// pas de vraies vidéos pour l'instant -> placeholder "non disponible"
+const hasConsent = ref(false)
 const loading = ref(false)
 const error = ref('')
 
@@ -26,21 +27,30 @@ const roleLabel = computed(() => {
 })
 
 onMounted(async () => {
-  if (!isMyProfile.value) return
   loading.value = true
   error.value = ''
   try {
-    const me = await fetchMe()
-    profileRole.value = me.role
+    const res = await fetch(`/profils/${id}`)
+    if (res.status === 404) {
+      error.value = 'Profil introuvable.'
+      return
+    }
+    if (!res.ok) throw new Error(`Erreur ${res.status}`)
+    const r = await res.json()
+    profileRole.value = typeof r.role === 'string' ? r.role : ''
     profile.value = {
       ...profile.value,
-      name: me.name || profile.value.name,
-      job: me.sector || profile.value.job,
-      city: me.location || profile.value.city,
-      skills: me.skills.length ? me.skills : profile.value.skills,
+      name: r.name || profile.value.name,
+      job: r.job || profile.value.job,
+      city: r.city || profile.value.city,
+      skills: Array.isArray(r.skills) && r.skills.length ? r.skills : profile.value.skills,
+      isCertified: Boolean(r.isCertified),
+      score: typeof r.score === 'number' ? r.score : null,
+      videoUrl: typeof r.videoUrl === 'string' ? r.videoUrl : '',
     }
+    hasConsent.value = Boolean(r.hasConsent) && Boolean(r.videoUrl)
   } catch (e) {
-    error.value = e instanceof Error ? e.message : 'Impossible de charger votre profil'
+    error.value = e instanceof Error ? e.message : 'Impossible de charger le profil'
   } finally {
     loading.value = false
   }
@@ -69,7 +79,7 @@ onMounted(async () => {
         <div v-else class="flex flex-col items-center justify-center text-text-muted p-6 text-center">
           <AlertTriangle class="w-12 h-12 mb-4" />
           <p class="font-marianne font-bold text-lg mb-2">Vidéo non disponible</p>
-          <p class="font-spectral">Le consentement de publication a été révoqué.</p>
+          <p class="font-spectral">Aucune présentation pour ce profil.</p>
         </div>
 
         <div v-if="hasConsent" class="absolute inset-0 flex items-center justify-center">
