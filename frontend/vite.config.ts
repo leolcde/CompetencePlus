@@ -20,6 +20,13 @@ export default defineConfig({
         target: process.env.VITE_API_URL ?? 'http://backend:8080',
         changeOrigin: true,
       },
+      '/quiz': {
+        target: process.env.VITE_API_URL ?? 'http://backend:8080',
+        changeOrigin: true,
+        bypass(req) {
+          if (req.headers.accept?.includes('text/html')) return '/index.html'
+        },
+      },
     },
   },
 })

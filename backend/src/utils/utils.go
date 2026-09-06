@@ -95,3 +95,29 @@ func Or(v, fallback string) string {
 	}
 	return v
 }
+
+// quiz
+
+type Question struct {
+	ID        uint `gorm:"primaryKey"`
+	Content   string
+	Options   pq.StringArray `gorm:"type:text[]"`
+	Weight    int
+	CreatedAt time.Time
+}
+
+type QuestionsAnswer struct {
+	ID         uint `gorm:"primaryKey"`
+	ProfileID  uint
+	QuestionID uint
+	Options    pq.StringArray `gorm:"type:text[]"`
+	CreatedAt  time.Time
+}
+
+type CertificationResult struct {
+	ID          uint `gorm:"primaryKey"`
+	ProfileID   uint
+	TotalScore  int
+	BadgeEarned bool
+	CreatedAt   time.Time
+}

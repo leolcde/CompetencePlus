@@ -6,6 +6,7 @@ import Feed from '../views/Feed.vue'
 import LandingPage from '../views/LandingPage.vue'
 import Login from '../views/Login.vue'
 import Profile from '../views/Profile.vue'
+import Quiz from '../views/quiz.vue'
 import Signup from '../views/Signup.vue'
 
 export const router = createRouter({
@@ -20,6 +21,7 @@ export const router = createRouter({
         { path: 'dashboard', name: 'dashboard', component: Dashboard, meta: { requiresAuth: true } },
         { path: 'login', name: 'login', component: Login },
         { path: 'profil/:id', name: 'profile', component: Profile },
+        { path: 'quiz', name: 'quiz', component: Quiz },
         { path: 'signup', name: 'signup', component: Signup },
       ],
     },
