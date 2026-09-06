@@ -1,10 +1,14 @@
 <script setup lang="ts">
 import { reactive, ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { useAuth } from '../stores/auth'
 
 const router = useRouter()
+const route = useRoute()
 const { login } = useAuth()
+
+// pré-remplissage depuis le bouton "Je suis candidat / recruteur" (?type=)
+const initialRole = route.query.type === 'recruteur' ? 'recruiter' : 'candidate'
 
 const formData = reactive({
   firstName: '',
@@ -12,7 +16,7 @@ const formData = reactive({
   email: '',
   password: '',
   birthDate: '',
-  role: 'candidate',
+  role: initialRole,
   sector: '',
   location: '',
   skills: '',

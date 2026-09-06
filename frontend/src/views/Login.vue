@@ -104,7 +104,7 @@ async function submit() {
       <p class="text-sm font-spectral text-text-muted mt-8 pt-6 border-t border-border text-center">
         Pas encore de compte ?
         <RouterLink
-          :to="{ name: 'signup' }"
+          :to="{ name: 'signup', query: { type: route.query.type } }"
           class="text-primary font-marianne font-bold hover:underline underline-offset-4"
         >
           S'inscrire

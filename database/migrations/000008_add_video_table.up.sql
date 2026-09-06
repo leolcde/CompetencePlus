@@ -1,0 +1,6 @@
+CREATE TABLE videos (
+    id SERIAL PRIMARY KEY,
+    profile_id INTEGER NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+    url VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP DEFAULT NOW()
+)
