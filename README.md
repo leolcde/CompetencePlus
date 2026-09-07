@@ -1,4 +1,4 @@
-# JibJob
+# ProfilsActifs
 
 Monorepo : `backend/` (API Go), `frontend/` (Vue 3 + Vite), `database/` (migrations SQL).
 
@@ -59,7 +59,7 @@ La migration `000006_seed_fake_profiles` insère des comptes de démo.
 ```bash
 cd backend
 go mod download
-go run .            # ou : go build -o dist/jibjob-server . && ./dist/jibjob-server
+go run .            # ou : go build -o dist/profilsactifs-server . && ./dist/profilsactifs-server
 ```
 
 Endpoints : `/`, `/health`, `/auth/register`, `/auth/login`.
@@ -76,7 +76,7 @@ npm run dev         # http://localhost:5173
 
 ```bash
 # Backend
-cd backend && go build -o dist/jibjob-server .
+cd backend && go build -o dist/profilsactifs-server .
 
 # Frontend
 cd frontend && npm run build     # sortie dans frontend/dist

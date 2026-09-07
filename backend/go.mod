@@ -1,4 +1,4 @@
-module jibjob
+module profilsactifs
 
 go 1.25.0
 

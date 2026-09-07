@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"time"
 
-	utils "jibjob/src/utils"
+	utils "profilsactifs/src/utils"
 
 	"gorm.io/gorm"
 )

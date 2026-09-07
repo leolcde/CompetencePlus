@@ -7,9 +7,9 @@ on:
     branches: [_access_test]
 
 env:
-  POSTGRES_USER: ${{ secrets.POSTGRES_USER || 'jibjob' }}
-  POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD || 'jibjob' }}
-  POSTGRES_DB: ${{ secrets.POSTGRES_DB || 'jibjob' }}
+  POSTGRES_USER: ${{ secrets.POSTGRES_USER || 'profilsactifs' }}
+  POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD || 'profilsactifs' }}
+  POSTGRES_DB: ${{ secrets.POSTGRES_DB || 'profilsactifs' }}
   JWT_SECRET: ${{ secrets.JWT_SECRET || 'ci-test-secret' }}
   PORT: "8080"
 
@@ -21,9 +21,9 @@ jobs:
       postgres:
         image: postgres:16
         env:
-          POSTGRES_USER: ${{ secrets.POSTGRES_USER || 'jibjob' }}
-          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD || 'jibjob' }}
-          POSTGRES_DB: ${{ secrets.POSTGRES_DB || 'jibjob' }}
+          POSTGRES_USER: ${{ secrets.POSTGRES_USER || 'profilsactifs' }}
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD || 'profilsactifs' }}
+          POSTGRES_DB: ${{ secrets.POSTGRES_DB || 'profilsactifs' }}
         ports:
           - 5432:5432
         options: >-
@@ -33,7 +33,7 @@ jobs:
           --health-retries 5
 
     env:
-      DATABASE_URL: postgres://${{ secrets.POSTGRES_USER || 'jibjob' }}:${{ secrets.POSTGRES_PASSWORD || 'jibjob' }}@localhost:5432/${{ secrets.POSTGRES_DB || 'jibjob' }}?sslmode=disable
+      DATABASE_URL: postgres://${{ secrets.POSTGRES_USER || 'profilsactifs' }}:${{ secrets.POSTGRES_PASSWORD || 'profilsactifs' }}@localhost:5432/${{ secrets.POSTGRES_DB || 'profilsactifs' }}?sslmode=disable
 
     defaults:
       run:
@@ -63,11 +63,11 @@ jobs:
         run: go test ./...
 
       - name: Build binary
-        run: go build -o dist/jibjob-server .
+        run: go build -o dist/profilsactifs-server .
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: jibjob-server
-          path: backend/dist/jibjob-server
+          name: profilsactifs-server
+          path: backend/dist/profilsactifs-server
           retention-days: 7

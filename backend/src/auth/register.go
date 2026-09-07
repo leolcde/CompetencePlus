@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	utils "jibjob/src/utils"
+	utils "profilsactifs/src/utils"
 
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
