@@ -4,7 +4,6 @@ import {
   CheckCircle2,
   AlertTriangle,
   Eye,
-  Heart,
   MessageSquare,
   ShieldCheck,
   Video,
@@ -31,7 +30,6 @@ const hasConsent = ref(false)
 const saved = ref(false)
 const profileViews = 128
 const contactedCount = 0
-const likedCount = 0
 const loadError = ref('')
 
 onMounted(async () => {
@@ -105,13 +103,6 @@ function save() {
               Candidats contactés
             </div>
             <p class="text-3xl font-marianne font-black text-primary">{{ contactedCount }}</p>
-          </div>
-          <div class="bg-white border border-border p-6">
-            <div class="flex items-center gap-2 text-text-muted font-marianne text-sm mb-3">
-              <Heart class="w-4 h-4" />
-              Profils likés
-            </div>
-            <p class="text-3xl font-marianne font-black text-primary">{{ likedCount }}</p>
           </div>
         </template>
         <template v-else>

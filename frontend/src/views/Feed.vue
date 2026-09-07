@@ -38,10 +38,7 @@ interface FeedItem {
   score: number | null
   videoUrl: string
   hasConsent: boolean
-  likes: number
 }
-
-const baseCount: Record<string, number> = { '1': 342, '2': 187, '3': 54 }
 
 // Feed mock affiché immédiatement, remplacé par GET /profils au montage.
 const mockFeed: FeedItem[] = MOCK_PROFILES.flatMap((p, batch) =>
@@ -57,7 +54,6 @@ const mockFeed: FeedItem[] = MOCK_PROFILES.flatMap((p, batch) =>
     videoUrl: '',
     // pas de vraies vidéos pour l'instant -> placeholder "non disponible"
     hasConsent: false,
-    likes: (baseCount[p.id] ?? 20) + k * 7,
   })),
 )
 
@@ -82,7 +78,6 @@ onMounted(async () => {
         score: typeof r.score === 'number' ? r.score : null,
         videoUrl: (r.videoUrl as string) || '',
         hasConsent: Boolean(r.hasConsent) && Boolean(r.videoUrl),
-        likes: baseCount[id] ?? 20,
       }
     })
   } catch {
