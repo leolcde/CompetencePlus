@@ -40,6 +40,20 @@ func checkRole(r Role) bool {
 	return false
 }
 
+func calculerAge(dateNaissance time.Time) int {
+	maintenant := time.Now()
+	age := maintenant.Year() - dateNaissance.Year()
+
+	// Si l'anniversaire n'est pas encore passé cette année, on retire 1 an
+	if maintenant.Month() < dateNaissance.Month() {
+		age--
+	} else if maintenant.Month() == dateNaissance.Month() && maintenant.Day() < dateNaissance.Day() {
+		age--
+	}
+
+	return age
+}
+
 func RegisterErrorHandling(res http.ResponseWriter, req *http.Request) (RegisterRequest, time.Time, bool) {
 	var r RegisterRequest
 	if err := json.NewDecoder(req.Body).Decode(&r); err != nil {
