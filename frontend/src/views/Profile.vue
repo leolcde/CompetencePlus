@@ -59,9 +59,9 @@ onMounted(async () => {
 
 <template>
   <div class="max-w-4xl mx-auto px-6 py-12 w-full">
-    <RouterLink to="/feed" class="inline-flex items-center gap-2 text-sm text-primary font-marianne font-medium hover:underline mb-8">
+    <RouterLink to="/profils" class="inline-flex items-center gap-2 text-sm text-primary font-marianne font-medium hover:underline mb-8">
       <ArrowLeft class="w-4 h-4" />
-      Retour au feed
+      Retour aux profils
     </RouterLink>
 
     <p v-if="loading" class="mb-4 text-sm text-text-muted font-marianne">Chargement de votre profil…</p>

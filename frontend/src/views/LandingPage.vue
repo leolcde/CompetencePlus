@@ -12,7 +12,7 @@ const footerLinks = [
     title: 'Plateforme',
     links: [
       { label: 'Accueil', to: { name: 'home' } },
-      { label: 'Feed', to: { name: 'feed' } },
+      { label: 'Les profils', to: { name: 'profiles' } },
       { label: "S'inscrire", to: { name: 'signup' } },
       { label: 'Mon espace', to: { name: 'dashboard' } },
     ],
@@ -60,7 +60,7 @@ const footerLinks = [
           <RouterLink to="/signup" class="btn-action w-full flex justify-center items-center text-lg shadow-md py-4">
             Inscription
           </RouterLink>
-          <RouterLink to="/feed" class="btn-secondary w-full text-lg shadow-sm bg-white/90 backdrop-blur-sm py-4">
+          <RouterLink to="/profils" class="btn-secondary w-full text-lg shadow-sm bg-white/90 backdrop-blur-sm py-4">
             Découvrir les profils
           </RouterLink>
         </div>

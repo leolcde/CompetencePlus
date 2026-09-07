@@ -143,10 +143,10 @@ function save() {
       <div v-if="isRecruiter" class="bg-white border border-border p-8">
         <h2 class="text-xl font-marianne font-bold text-primary mb-2">Espace recruteur</h2>
         <p class="font-spectral text-text-main mb-6">
-          Parcourez le feed pour découvrir des candidats, contactez-les et likez les profils qui
+          Parcourez les profils pour découvrir des candidats, contactez-les et likez ceux qui
           vous intéressent. Vous ne publiez pas de vidéo de présentation.
         </p>
-        <RouterLink :to="{ name: 'feed' }" class="btn-action text-sm">Explorer le feed</RouterLink>
+        <RouterLink :to="{ name: 'profiles' }" class="btn-action text-sm">Voir les profils</RouterLink>
       </div>
 
       <!-- Certification (candidat) -->

@@ -35,7 +35,7 @@ watch(
 
 // liens visibles selon l'état de connexion
 const links = computed(() => {
-  const base = [{ label: 'Feed', to: { name: 'feed' } }]
+  const base = [{ label: 'Profils', to: { name: 'profiles' } }]
   if (!isAuthenticated.value) {
     base.push({ label: "S'inscrire", to: { name: 'signup' } })
   }
