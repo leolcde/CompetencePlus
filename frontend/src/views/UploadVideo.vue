@@ -5,6 +5,8 @@ import { ref } from 'vue'
 
 const videoInput = ref<HTMLInputElement | null>(null)
 const videoUrl = ref<string | null>(null)
+const saved = ref(false)
+const showSuccess = ref(false)
 
 function openFilePicker() {
     videoInput.value?.click()
@@ -19,7 +21,10 @@ function onFileSelected(event: Event) {
 }
 
 function saveVideo() {
-    console.log('enregistrement...', videoUrl.value)
+    showSuccess.value = true
+    setTimeout(() => {
+        showSuccess.value = false
+    }, 3000)
 }
 
 </script>
@@ -27,6 +32,9 @@ function saveVideo() {
 <template>
     <div class="max-w-4xl mx-auto px-6 py-12 w-full">
         <div class="bg-white border border-border p-8 flex flex-col items-center gap-6">
+            <div v-if="showSuccess" class="fixed top-6 left-1/2 -translate-x-1/2 z-50 bg-white border border-border px-6 py-4 fot-marianne font-bold text-success shadow-md">
+                Vidéo enregistrée avec succès !
+            </div>
             <h2 class="text-xl font-marianne font-bold text-primary text-center mb-6">Ma vidéo de présentation</h2>
             <input type="file" accept="video/*" ref="videoInput" class="hidden" @change="onFileSelected" />
             <button @click="openFilePicker">Choisir une vidéo</button>
