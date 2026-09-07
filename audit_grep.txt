@@ -1,0 +1,62 @@
+# ============================================================
+# SORTIE BRUTE — grep -rniE "allocation|seuil|droit|calcul|perte" .
+# (exclusions : node_modules, .git — dépendances tierces uniquement)
+# ============================================================
+
+frontend/src/views/Feed.vue:21:// connecté mais rôle sans le droit -> action ignorée
+frontend/src/views/Feed.vue:191:      <!-- Rail d'actions droite -->
+frontend/src/assets/data/mock.ts:34:    skills: ["Recrutement", "Formation", "Droit du travail"],
+backend/src/quiz/validate_quiz.go:12:// Validate calcule le score du profil et enregistre le résultat de certification.
+
+
+# ============================================================
+# REVUE LIGNE PAR LIGNE
+# ============================================================
+
+# 1. frontend/src/views/Feed.vue:21
+#    "// connecté mais rôle sans le droit -> action ignorée"
+#    -> CODE ACTIF. "droit" = permission applicative (like/contact), aucun rapport
+#       avec un droit social. REFORMULÉ : "sans le droit" -> "sans la permission".
+#       (modif appliquée dans le working tree)
+
+# 2. frontend/src/views/Feed.vue:191
+#    "<!-- Rail d'actions droite -->"
+#    -> FAUX POSITIF. "droite" = côté droit de l'écran (direction). Conservé tel quel.
+
+# 3. frontend/src/assets/data/mock.ts:34
+#    'skills: ["Recrutement", "Formation", "Droit du travail"]'
+#    -> FAUX POSITIF. "Droit du travail" = compétence d'un profil recruteur de démo
+#       (donnée mock), pas un mécanisme d'attribution de droits. Conservé tel quel.
+
+# 4. backend/src/quiz/validate_quiz.go:12
+#    "// Validate calcule le score du profil et enregistre le résultat de certification."
+#    -> FAUX POSITIF sur "calcule". Commentaire du calcul de score du quiz de
+#       savoir-être. Le résultat (badge JEB) n'ouvre AUCUN droit ni allocation :
+#       il n'est même pas relié aux endpoints /profils (IsCertified/Score câblés
+#       en dur à false/0). Conservé tel quel.
+
+
+# ============================================================
+# PASSES COMPLÉMENTAIRES (hors périmètre du grep demandé, pour confirmer
+# l'absence de lien engagement <-> droits)
+# ============================================================
+#
+# grep "certif|badge|éligib|débloqu|conditionn|prérequis" :
+#   - aucun endpoint / aucune permission conditionné par la certification.
+#
+# grep "mis en avant|prioris|réserv|sanction|malus|obligat|score|savoir-être|demandeur" :
+#   - backend/src/utils/utils.go PermissionsFor() : permissions (can_publish_video,
+#     can_contact, can_like) dérivées UNIQUEMENT du rôle. Zéro dépendance au quiz,
+#     au score ou à la certification.
+#   - profils.go / profils_detail.go : tri du feed = created_at DESC, id DESC.
+#     Aucune priorisation/visibilité liée à l'engagement ou au score.
+#   - Feed.vue / Profile.vue : bouton "Contacter" gaté par can.contact (rôle),
+#     pas par la certification. Le badge JEB est purement décoratif.
+#
+# CONCLUSION : aucun lien mécanique engagement/quiz -> droits/permissions dans le
+# code ou l'UI active. Points rhétoriques à arbitrer (contenu, non mécanique) :
+#   - LandingPage.vue:4  témoignage "identifier rapidement les candidats sérieux"
+#     (sous-entend : non-certifié = moins sérieux)
+#   - LandingPage.vue:57 "plateforme gouvernementale" + "demandeurs d'emploi"
+#     + certification de "savoir-être" : cadre régalien à surveiller.
+#   Non modifiés : décision éditoriale qui t'appartient.

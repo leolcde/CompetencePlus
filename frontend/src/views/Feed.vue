@@ -18,7 +18,7 @@ function requireAuth(): boolean {
   return false
 }
 
-// connecté mais rôle sans le droit -> action ignorée
+// connecté mais rôle sans la permission -> action ignorée
 const canLike = computed(() => !isAuthenticated.value || can.value.like)
 const canContact = computed(() => !isAuthenticated.value || can.value.contact)
 
@@ -118,7 +118,6 @@ function toggleLike(uid: string) {
   persist()
 }
 
-// petit feedback visuel sur double-tap / clic image
 const burst = ref<string | null>(null)
 function doubleLike(uid: string) {
   if (!requireAuth()) return
@@ -138,7 +137,6 @@ const total = computed(() => feed.value.length)
       :key="item.uid"
       class="h-[calc(100dvh-4rem)] sm:h-[calc(100dvh-5rem)] snap-start relative flex items-center justify-center overflow-hidden"
     >
-      <!-- Média -->
       <template v-if="item.hasConsent">
         <img
           :src="item.videoUrl"
@@ -154,13 +152,11 @@ const total = computed(() => feed.value.length)
         <p class="font-spectral text-sm">Aucune présentation pour ce profil</p>
       </div>
 
-      <!-- coeur "burst" -->
       <Heart
         v-if="burst === item.uid"
         class="absolute w-24 h-24 sm:w-32 sm:h-32 text-white fill-action drop-shadow-lg animate-ping"
       />
 
-      <!-- Infos bas gauche -->
       <div class="absolute left-0 bottom-0 p-4 sm:p-6 md:p-10 max-w-[75%] sm:max-w-md md:max-w-lg pr-16 sm:pr-24 text-white z-10">
         <div class="mb-3">
           <JebBadge v-if="item.isCertified" />
@@ -188,7 +184,6 @@ const total = computed(() => feed.value.length)
         </RouterLink>
       </div>
 
-      <!-- Rail d'actions droite -->
       <div class="absolute right-2 sm:right-6 bottom-16 sm:bottom-24 flex flex-col items-center gap-4 sm:gap-6 z-10 text-white">
         <button
           class="flex flex-col items-center group"
