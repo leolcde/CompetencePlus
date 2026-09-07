@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, reactive, ref } from 'vue'
+import { computed, onMounted, reactive, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { Heart, Lock, MapPin, MessageSquare, Share2, VideoOff } from 'lucide-vue-next'
 import { MOCK_PROFILES } from '../assets/data/mock'
@@ -8,7 +8,7 @@ import { useAuth } from '../stores/auth'
 
 const router = useRouter()
 const route = useRoute()
-const { isAuthenticated } = useAuth()
+const { isAuthenticated, can } = useAuth()
 
 const showAuthModal = ref(false)
 
@@ -18,21 +18,77 @@ function requireAuth(): boolean {
   return false
 }
 
+// connecté mais rôle sans le droit -> action ignorée
+const canLike = computed(() => !isAuthenticated.value || can.value.like)
+const canContact = computed(() => !isAuthenticated.value || can.value.contact)
+
 function chooseType(type: 'candidat' | 'recruteur') {
   showAuthModal.value = false
   router.push({ name: 'login', query: { type, redirect: route.fullPath } })
 }
 
-// On étoffe le feed à partir des profils mock (pas de backend)
+interface FeedItem {
+  uid: string
+  id: string
+  name: string
+  job: string
+  city: string
+  skills: string[]
+  isCertified: boolean
+  score: number | null
+  videoUrl: string
+  hasConsent: boolean
+  likes: number
+}
+
 const baseCount: Record<string, number> = { '1': 342, '2': 187, '3': 54 }
 
-const feed = MOCK_PROFILES.flatMap((p, batch) =>
+// Feed mock affiché immédiatement, remplacé par GET /profils au montage.
+const mockFeed: FeedItem[] = MOCK_PROFILES.flatMap((p, batch) =>
   [0, 1, 2].map((k) => ({
-    ...p,
     uid: `${p.id}-${batch}-${k}`,
+    id: p.id,
+    name: p.name,
+    job: p.job,
+    city: p.city,
+    skills: p.skills,
+    isCertified: p.isCertified,
+    score: p.score,
+    videoUrl: '',
+    // pas de vraies vidéos pour l'instant -> placeholder "non disponible"
+    hasConsent: false,
     likes: (baseCount[p.id] ?? 20) + k * 7,
   })),
 )
+
+const feed = ref<FeedItem[]>(mockFeed)
+
+onMounted(async () => {
+  try {
+    const res = await fetch('/profils')
+    if (!res.ok) return
+    const rows = await res.json()
+    if (!Array.isArray(rows) || rows.length === 0) return
+    feed.value = rows.map((r: Record<string, unknown>): FeedItem => {
+      const id = String(r.id ?? '')
+      return {
+        uid: id,
+        id,
+        name: (r.name as string) || 'Profil',
+        job: (r.job as string) || 'Profil ProfilsActifs',
+        city: (r.city as string) || 'France',
+        skills: Array.isArray(r.skills) ? (r.skills as string[]) : [],
+        isCertified: Boolean(r.isCertified),
+        score: typeof r.score === 'number' ? r.score : null,
+        videoUrl: (r.videoUrl as string) || '',
+        hasConsent: Boolean(r.hasConsent) && Boolean(r.videoUrl),
+        likes: baseCount[id] ?? 20,
+      }
+    })
+  } catch {
+    /* on garde le feed mock */
+  }
+})
 
 const LS_KEY = 'feed_likes'
 
@@ -56,6 +112,7 @@ function persist() {
 
 function toggleLike(uid: string) {
   if (!requireAuth()) return
+  if (!can.value.like) return
   if (liked.has(uid)) liked.delete(uid)
   else liked.add(uid)
   persist()
@@ -65,12 +122,13 @@ function toggleLike(uid: string) {
 const burst = ref<string | null>(null)
 function doubleLike(uid: string) {
   if (!requireAuth()) return
+  if (!can.value.like) return
   if (!liked.has(uid)) toggleLike(uid)
   burst.value = uid
   setTimeout(() => (burst.value = null), 600)
 }
 
-const total = computed(() => feed.length)
+const total = computed(() => feed.value.length)
 </script>
 
 <template>
@@ -92,8 +150,8 @@ const total = computed(() => feed.length)
       </template>
       <div v-else class="absolute inset-0 bg-surface flex flex-col items-center justify-center text-text-muted">
         <VideoOff class="w-12 h-12 mb-3" />
-        <p class="font-marianne font-bold">Vidéo masquée</p>
-        <p class="font-spectral text-sm">Consentement non accordé</p>
+        <p class="font-marianne font-bold">Vidéo non disponible</p>
+        <p class="font-spectral text-sm">Aucune présentation pour ce profil</p>
       </div>
 
       <!-- coeur "burst" -->
@@ -107,7 +165,7 @@ const total = computed(() => feed.length)
         <div class="mb-3">
           <JebBadge v-if="item.isCertified" />
         </div>
-        <h2 class="text-2xl sm:text-3xl font-marianne font-black tracking-tight drop-shadow">{{ item.name }}</h2>
+        <h2 class="text-2xl sm:text-3xl font-marianne font-white tracking-tight drop-shadow">{{ item.name }}</h2>
         <p class="font-marianne font-medium text-white/90 mb-2">{{ item.job }}</p>
         <p class="font-marianne text-sm text-white/70 flex items-center gap-1.5 mb-4">
           <MapPin class="w-3.5 h-3.5" />
@@ -132,7 +190,12 @@ const total = computed(() => feed.length)
 
       <!-- Rail d'actions droite -->
       <div class="absolute right-2 sm:right-6 bottom-16 sm:bottom-24 flex flex-col items-center gap-4 sm:gap-6 z-10 text-white">
-        <button class="flex flex-col items-center group" @click="toggleLike(item.uid)">
+        <button
+          class="flex flex-col items-center group"
+          :class="{ 'opacity-40 cursor-not-allowed': !canLike }"
+          :title="canLike ? 'Aimer' : 'Réservé aux recruteurs'"
+          @click="toggleLike(item.uid)"
+        >
           <span
             class="w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-white/15 backdrop-blur-sm border border-white/20 flex items-center justify-center group-hover:bg-white/25 transition-colors"
           >
@@ -143,7 +206,12 @@ const total = computed(() => feed.length)
           </span>
         </button>
 
-        <button class="flex flex-col items-center group" @click="requireAuth()">
+        <button
+          class="flex flex-col items-center group"
+          :class="{ 'opacity-40 cursor-not-allowed': !canContact }"
+          :title="canContact ? 'Contacter' : 'Réservé aux recruteurs'"
+          @click="canContact && requireAuth()"
+        >
           <span
             class="w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-white/15 backdrop-blur-sm border border-white/20 flex items-center justify-center group-hover:bg-white/25 transition-colors"
           >

@@ -1,28 +1,51 @@
 <script setup lang="ts">
-import { computed, reactive, ref } from 'vue'
+import { computed, onMounted, reactive, ref } from 'vue'
 import {
   CheckCircle2,
   AlertTriangle,
   Eye,
+  Heart,
+  MessageSquare,
   ShieldCheck,
   Video,
 } from 'lucide-vue-next'
 import { MOCK_PROFILES } from '../assets/data/mock'
+import { useAuth } from '../stores/auth'
 import JebBadge from '../assets/JebBadge.vue'
 
-// Profil connecté (démo : le profil "1")
-const source = MOCK_PROFILES.find((p) => p.id === '1') ?? MOCK_PROFILES[0]
+const { user, fetchMe, isRecruiter, can } = useAuth()
+
+// Champs non encore fournis par le backend : fallback sur le mock.
+const source = MOCK_PROFILES.find((p) => p.id === user.value?.id) ?? MOCK_PROFILES[0]
 
 const form = reactive({
-  name: source.name,
+  id: user.value?.id ?? source.id,
+  name: user.value?.name || source.name,
   job: source.job,
   city: source.city,
   skills: source.skills.join(', '),
 })
 
-const hasConsent = ref(source.hasConsent)
+// pas de vraies vidéos pour l'instant
+const hasConsent = ref(false)
 const saved = ref(false)
 const profileViews = 128
+const contactedCount = 0
+const likedCount = 0
+const loadError = ref('')
+
+onMounted(async () => {
+  try {
+    const me = await fetchMe()
+    form.id = me.id || form.id
+    form.name = me.name || form.name
+    form.job = me.sector || form.job
+    form.city = me.location || form.city
+    if (me.skills.length) form.skills = me.skills.join(', ')
+  } catch (e) {
+    loadError.value = e instanceof Error ? e.message : 'Impossible de charger votre profil'
+  }
+})
 
 const skillList = computed(() =>
   form.skills
@@ -48,42 +71,73 @@ function save() {
       <div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
           <p class="font-marianne font-bold text-action text-xs uppercase tracking-wide mb-2">
-            Espace personnel
+            Paramètres du profil
           </p>
-          <h1 class="text-3xl sm:text-4xl font-marianne font-black text-primary tracking-tight">
+          <h1 class="text-3xl sm:text-4xl font-marianne font-black text-primary tracking-tight flex items-center gap-3 flex-wrap">
             {{ form.name }}
+            <span
+              class="px-2 py-0.5 text-xs uppercase tracking-wide font-bold border"
+              :class="isRecruiter ? 'border-primary text-primary' : 'border-action text-action'"
+            >
+              {{ isRecruiter ? 'Recruteur' : 'Candidat' }}
+            </span>
           </h1>
           <p class="text-text-muted font-spectral mt-1">{{ form.job }} · {{ form.city }}</p>
         </div>
-        <RouterLink :to="`/profil/${source.id}`" class="btn-secondary text-sm">
+        <RouterLink :to="`/profil/${form.id}`" class="btn-secondary text-sm">
           Voir mon profil public
         </RouterLink>
       </div>
 
+      <p
+        v-if="loadError"
+        class="border border-action bg-surface text-action font-marianne text-sm p-3"
+      >
+        {{ loadError }}
+      </p>
+
       <!-- Statistiques -->
       <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div class="bg-white border border-border p-6">
-          <div class="flex items-center gap-2 text-text-muted font-marianne text-sm mb-3">
-            <ShieldCheck class="w-4 h-4" />
-            Certification JEB
+        <template v-if="isRecruiter">
+          <div class="bg-white border border-border p-6">
+            <div class="flex items-center gap-2 text-text-muted font-marianne text-sm mb-3">
+              <MessageSquare class="w-4 h-4" />
+              Candidats contactés
+            </div>
+            <p class="text-3xl font-marianne font-black text-primary">{{ contactedCount }}</p>
           </div>
-          <p class="text-3xl font-marianne font-black text-primary">
-            {{ source.isCertified ? `${source.score}/100` : 'Non passée' }}
-          </p>
-        </div>
+          <div class="bg-white border border-border p-6">
+            <div class="flex items-center gap-2 text-text-muted font-marianne text-sm mb-3">
+              <Heart class="w-4 h-4" />
+              Profils likés
+            </div>
+            <p class="text-3xl font-marianne font-black text-primary">{{ likedCount }}</p>
+          </div>
+        </template>
+        <template v-else>
+          <div class="bg-white border border-border p-6">
+            <div class="flex items-center gap-2 text-text-muted font-marianne text-sm mb-3">
+              <ShieldCheck class="w-4 h-4" />
+              Certification JEB
+            </div>
+            <p class="text-3xl font-marianne font-black text-primary">
+              {{ source.isCertified ? `${source.score}/100` : 'Non passée' }}
+            </p>
+          </div>
 
-        <div class="bg-white border border-border p-6">
-          <div class="flex items-center gap-2 text-text-muted font-marianne text-sm mb-3">
-            <Video class="w-4 h-4" />
-            Statut de la vidéo
+          <div class="bg-white border border-border p-6">
+            <div class="flex items-center gap-2 text-text-muted font-marianne text-sm mb-3">
+              <Video class="w-4 h-4" />
+              Statut de la vidéo
+            </div>
+            <p
+              class="text-3xl font-marianne font-black"
+              :class="hasConsent ? 'text-success' : 'text-text-muted'"
+            >
+              {{ hasConsent ? 'Publiée' : 'Masquée' }}
+            </p>
           </div>
-          <p
-            class="text-3xl font-marianne font-black"
-            :class="hasConsent ? 'text-success' : 'text-text-muted'"
-          >
-            {{ hasConsent ? 'Publiée' : 'Masquée' }}
-          </p>
-        </div>
+        </template>
 
         <div class="bg-white border border-border p-6">
           <div class="flex items-center gap-2 text-text-muted font-marianne text-sm mb-3">
@@ -94,9 +148,19 @@ function save() {
         </div>
       </div>
 
-      <!-- Certification -->
+      <!-- Panneau recruteur -->
+      <div v-if="isRecruiter" class="bg-white border border-border p-8">
+        <h2 class="text-xl font-marianne font-bold text-primary mb-2">Espace recruteur</h2>
+        <p class="font-spectral text-text-main mb-6">
+          Parcourez le feed pour découvrir des candidats, contactez-les et likez les profils qui
+          vous intéressent. Vous ne publiez pas de vidéo de présentation.
+        </p>
+        <RouterLink :to="{ name: 'feed' }" class="btn-action text-sm">Explorer le feed</RouterLink>
+      </div>
+
+      <!-- Certification (candidat) -->
       <div
-        v-if="source.isCertified"
+        v-if="!isRecruiter && source.isCertified"
         class="bg-white border border-border p-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
       >
         <div class="flex items-center gap-4">
@@ -106,7 +170,7 @@ function save() {
           </p>
         </div>
       </div>
-      <div v-else class="bg-white border border-border p-8">
+      <div v-else-if="!isRecruiter" class="bg-white border border-border p-8">
         <h2 class="text-xl font-marianne font-bold text-primary mb-2">Passez la certification JEB</h2>
         <p class="font-spectral text-text-main mb-6">
           Valorisez vos compétences douces auprès des recruteurs.
@@ -166,8 +230,8 @@ function save() {
         </form>
       </div>
 
-      <!-- Gestion de la vidéo / consentement -->
-      <div class="bg-white border border-border p-8 md:p-10">
+      <!-- Gestion de la vidéo / consentement (candidat uniquement) -->
+      <div v-if="can.publishVideo" class="bg-white border border-border p-8 md:p-10">
         <h2 class="text-2xl font-marianne font-bold text-primary mb-2">Ma vidéo de présentation</h2>
         <p class="font-spectral text-text-main mb-8">
           Vous contrôlez la diffusion de votre vidéo auprès des recruteurs.

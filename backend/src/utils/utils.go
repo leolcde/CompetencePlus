@@ -30,6 +30,13 @@ type Profile struct {
 	CreatedAt    time.Time      `json:"created_at"`
 }
 
+type Video struct {
+	ID        uint      `json:"id" gorm:"primaryKey"`
+	ProfileID uint      `json:"-"`
+	URL       string    `json:"url"`
+	CreatedAt time.Time `json:"created_at"`
+}
+
 // LOGIN
 
 type LoginRequest struct {
@@ -46,4 +53,71 @@ type Claims struct {
 	UserID string `json:"user_id"`
 	Role   string `json:"role"`
 	jwt.RegisteredClaims
+}
+
+type MeResponse struct {
+	ID                  int64       `json:"id"`
+	Email               string      `json:"email"`
+	Role                string      `json:"role"`
+	DateNaissance       string      `json:"date_naissance"`
+	Identite            string      `json:"identite,omitempty"`
+	Competences         []string    `json:"competences,omitempty"`
+	Secteur             string      `json:"secteur,omitempty"`
+	Localisation        string      `json:"localisation,omitempty"`
+	StatutCertification string      `json:"statut_certification,omitempty"`
+	CreatedAt           string      `json:"created_at"`
+	Permissions         Permissions `json:"permissions"`
+}
+
+// PERMISSIONS
+
+type Permissions struct {
+	CanPublishVideo bool `json:"can_publish_video"`
+	CanContact      bool `json:"can_contact"`
+	CanLike         bool `json:"can_like"`
+}
+
+func PermissionsFor(role Role) Permissions {
+	switch role {
+	case Recruiter:
+		return Permissions{CanContact: true, CanLike: true}
+	case Candidate:
+		return Permissions{CanPublishVideo: true}
+	default:
+		return Permissions{}
+	}
+}
+
+// Or renvoie v, ou fallback si v est vide.
+func Or(v, fallback string) string {
+	if v == "" {
+		return fallback
+	}
+	return v
+}
+
+// quiz
+
+type Question struct {
+	ID        uint `gorm:"primaryKey"`
+	Content   string
+	Options   pq.StringArray `gorm:"type:text[]"`
+	Weight    int
+	CreatedAt time.Time
+}
+
+type QuestionsAnswer struct {
+	ID         uint `gorm:"primaryKey"`
+	ProfileID  uint
+	QuestionID uint
+	Options    pq.StringArray `gorm:"type:text[]"`
+	CreatedAt  time.Time
+}
+
+type CertificationResult struct {
+	ID          uint `gorm:"primaryKey"`
+	ProfileID   uint
+	TotalScore  int
+	BadgeEarned bool
+	CreatedAt   time.Time
 }

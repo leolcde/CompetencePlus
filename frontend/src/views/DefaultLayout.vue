@@ -1,14 +1,17 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { LogOut, Menu, X } from 'lucide-vue-next'
+import { LogOut, Menu, Settings, X } from 'lucide-vue-next'
 import { useAuth } from '../stores/auth'
 
 const route = useRoute()
 const router = useRouter()
-const { user, isAuthenticated, logout } = useAuth()
+const { user, isAuthenticated, isRecruiter, logout } = useAuth()
+
+const roleLabel = computed(() => (isRecruiter.value ? 'Recruteur' : 'Candidat'))
 const open = ref(false)
 const loginDropdown = ref(false)
+const profileDropdown = ref(false)
 
 function closeLoginDropdown() {
   loginDropdown.value = false
@@ -16,7 +19,10 @@ function closeLoginDropdown() {
 
 watch(
   () => route.fullPath,
-  () => { loginDropdown.value = false }
+  () => {
+    loginDropdown.value = false
+    profileDropdown.value = false
+  }
 )
 
 // referme le menu à chaque changement de page
@@ -30,9 +36,7 @@ watch(
 // liens visibles selon l'état de connexion
 const links = computed(() => {
   const base = [{ label: 'Feed', to: { name: 'feed' } }]
-  if (isAuthenticated.value) {
-    base.push({ label: 'Mon espace', to: { name: 'dashboard' } })
-  } else {
+  if (!isAuthenticated.value) {
     base.push({ label: "S'inscrire", to: { name: 'signup' } })
   }
   return base
@@ -96,17 +100,46 @@ function onLogout() {
             </div>
           </div>
 
-          <template v-if="isAuthenticated">
-            <span class="text-text-muted">·</span>
-            <span class="text-text-muted">{{ user?.name || user?.email }}</span>
+          <div v-if="isAuthenticated" class="relative">
             <button
-              class="btn-secondary text-xs px-3 py-1 border border-border inline-flex items-center gap-1.5"
-              @click="onLogout"
+              class="inline-flex items-center gap-1.5 text-primary font-marianne font-medium hover:underline underline-offset-4"
+              @click="profileDropdown = !profileDropdown"
             >
-              <LogOut class="w-3.5 h-3.5" />
-              Se déconnecter
+              {{ user?.name || user?.email }}
+              <span
+                class="px-1.5 py-0.5 text-[10px] uppercase tracking-wide font-bold border"
+                :class="isRecruiter ? 'border-primary text-primary' : 'border-action text-action'"
+              >
+                {{ roleLabel }}
+              </span>
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+              </svg>
             </button>
-          </template>
+            <div
+              v-if="profileDropdown"
+              class="absolute right-0 top-full mt-2 w-56 bg-white border border-border shadow-md z-50"
+              @mouseleave="profileDropdown = false"
+            >
+              <p class="px-4 py-2 text-xs font-marianne text-text-muted border-b border-border">
+                Connecté en tant que <span class="font-bold text-primary">{{ roleLabel }}</span>
+              </p>
+              <RouterLink
+                :to="{ name: 'dashboard' }"
+                class="flex items-center gap-2 px-4 py-3 font-marianne text-sm text-primary hover:bg-surface"
+              >
+                <Settings class="w-4 h-4" />
+                Paramètres du profil
+              </RouterLink>
+              <button
+                class="w-full flex items-center gap-2 px-4 py-3 font-marianne text-sm text-primary hover:bg-surface border-t border-border"
+                @click="onLogout"
+              >
+                <LogOut class="w-4 h-4" />
+                Se déconnecter
+              </button>
+            </div>
+          </div>
         </nav>
 
         <!-- Bouton menu mobile -->
@@ -133,6 +166,15 @@ function onLogout() {
           class="py-3 px-2 text-primary hover:bg-surface rounded"
         >
           {{ link.label }}
+        </RouterLink>
+
+        <RouterLink
+          v-if="isAuthenticated"
+          :to="{ name: 'dashboard' }"
+          class="py-3 px-2 text-primary hover:bg-surface rounded inline-flex items-center gap-2"
+        >
+          <Settings class="w-4 h-4" />
+          Paramètres du profil
         </RouterLink>
 
         <button

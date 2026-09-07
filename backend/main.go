@@ -8,6 +8,8 @@ import (
 	"os"
 
 	"jibjob/src/auth"
+	"jibjob/src/profils"
+	"jibjob/src/quiz"
 	utils "jibjob/src/utils"
 
 	"gorm.io/gorm"
@@ -50,17 +52,25 @@ func main() {
 		log.Fatal("connexion db impossible: ", err)
 	}
 
-	http.HandleFunc("/", handler)
-	http.HandleFunc("/health", health(gdb))
-	http.HandleFunc("/auth/register", auth.Register(gdb))
-	http.HandleFunc("/auth/login", auth.Login(gdb))
+	router := http.NewServeMux()
+	router.HandleFunc("/", handler)
+	router.HandleFunc("/health", health(gdb))
+	router.HandleFunc("/auth/register", auth.Register(gdb))
+	router.HandleFunc("/auth/login", auth.Login(gdb))
+	router.HandleFunc("/auth/me", auth.Me(gdb))
+	router.HandleFunc("/profils", profils.List(gdb))
+	router.HandleFunc("/profils/{id}", profils.Detail(gdb))
+	router.HandleFunc("/quiz", quiz.List(gdb))
+	router.HandleFunc("/quiz/start", quiz.Start(gdb))
+	router.HandleFunc("/quiz/answer", quiz.SaveAnswer(gdb))
+	router.HandleFunc("/quiz/valider", quiz.Validate(gdb))
 
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "8080"
 	}
 	fmt.Println("serv up in http://localhost:" + port)
-	if err := http.ListenAndServe(":"+port, nil); err != nil {
+	if err := http.ListenAndServe(":"+port, router); err != nil {
 		log.Fatal(err)
 	}
 }

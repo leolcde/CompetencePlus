@@ -1,15 +1,60 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { ArrowLeft, MapPin, MessageSquare, AlertTriangle, CheckCircle2 } from 'lucide-vue-next'
 import { MOCK_PROFILES } from '../assets/data/mock'
+import { useAuth } from '../stores/auth'
 import JebBadge from '../assets/JebBadge.vue'
 
 const route = useRoute()
+const { user, isAuthenticated, can } = useAuth()
 const id = String(route.params.id)
-const profile = MOCK_PROFILES.find(p => p.id === id) ?? MOCK_PROFILES[0]
-const isMyProfile = id === '1'
-const hasConsent = ref(profile.hasConsent)
+const base = MOCK_PROFILES.find(p => p.id === id) ?? MOCK_PROFILES[0]
+const profile = ref({ ...base })
+const isMyProfile = computed(() => isAuthenticated.value && id === user.value?.id)
+// pas de vraies vidéos pour l'instant -> placeholder "non disponible"
+const hasConsent = ref(false)
+const loading = ref(false)
+const error = ref('')
+
+// rôle : connu pour son propre profil (via /auth/me) ou si le profil le porte
+const profileRole = ref<string>('')
+const roleLabel = computed(() => {
+  const r = profileRole.value || (isMyProfile.value ? user.value?.role : '')
+  if (r === 'recruiter') return 'Recruteur'
+  if (r === 'candidate') return 'Candidat'
+  return ''
+})
+
+onMounted(async () => {
+  loading.value = true
+  error.value = ''
+  try {
+    const res = await fetch(`/profils/${id}`)
+    if (res.status === 404) {
+      error.value = 'Profil introuvable.'
+      return
+    }
+    if (!res.ok) throw new Error(`Erreur ${res.status}`)
+    const r = await res.json()
+    profileRole.value = typeof r.role === 'string' ? r.role : ''
+    profile.value = {
+      ...profile.value,
+      name: r.name || profile.value.name,
+      job: r.job || profile.value.job,
+      city: r.city || profile.value.city,
+      skills: Array.isArray(r.skills) && r.skills.length ? r.skills : profile.value.skills,
+      isCertified: Boolean(r.isCertified),
+      score: typeof r.score === 'number' ? r.score : null,
+      videoUrl: typeof r.videoUrl === 'string' ? r.videoUrl : '',
+    }
+    hasConsent.value = Boolean(r.hasConsent) && Boolean(r.videoUrl)
+  } catch (e) {
+    error.value = e instanceof Error ? e.message : 'Impossible de charger le profil'
+  } finally {
+    loading.value = false
+  }
+})
 </script>
 
 <template>
@@ -18,6 +63,9 @@ const hasConsent = ref(profile.hasConsent)
       <ArrowLeft class="w-4 h-4" />
       Retour au feed
     </RouterLink>
+
+    <p v-if="loading" class="mb-4 text-sm text-text-muted font-marianne">Chargement de votre profil…</p>
+    <p v-if="error" class="mb-4 border border-action bg-surface text-action font-marianne text-sm p-3">{{ error }}</p>
 
     <div class="bg-white border border-border">
       <!-- Zone vidéo -->
@@ -31,7 +79,7 @@ const hasConsent = ref(profile.hasConsent)
         <div v-else class="flex flex-col items-center justify-center text-text-muted p-6 text-center">
           <AlertTriangle class="w-12 h-12 mb-4" />
           <p class="font-marianne font-bold text-lg mb-2">Vidéo non disponible</p>
-          <p class="font-spectral">Le consentement de publication a été révoqué.</p>
+          <p class="font-spectral">Aucune présentation pour ce profil.</p>
         </div>
 
         <div v-if="hasConsent" class="absolute inset-0 flex items-center justify-center">
@@ -44,7 +92,16 @@ const hasConsent = ref(profile.hasConsent)
       <div class="p-8 md:p-12">
         <div class="flex flex-col md:flex-row justify-between items-start gap-8 mb-12">
           <div>
-            <h1 class="text-3xl sm:text-4xl font-marianne font-black text-primary mb-2 tracking-tight">{{ profile.name }}</h1>
+            <h1 class="text-3xl sm:text-4xl font-marianne font-black text-primary mb-2 tracking-tight flex items-center gap-3 flex-wrap">
+              {{ profile.name }}
+              <span
+                v-if="roleLabel"
+                class="px-2 py-0.5 text-xs uppercase tracking-wide font-bold border"
+                :class="roleLabel === 'Recruteur' ? 'border-primary text-primary' : 'border-action text-action'"
+              >
+                {{ roleLabel }}
+              </span>
+            </h1>
             <p class="text-xl font-marianne text-text-main font-medium mb-6">{{ profile.job }}</p>
             <div class="flex items-center gap-2 text-text-muted font-marianne text-sm">
               <MapPin class="w-4 h-4" />
@@ -52,11 +109,20 @@ const hasConsent = ref(profile.hasConsent)
             </div>
           </div>
 
-          <div class="flex flex-col gap-4 min-w-[200px] shrink-0">
-            <button class="btn-action w-full flex items-center justify-center gap-2">
+          <div v-if="!isMyProfile" class="flex flex-col gap-4 min-w-[200px] shrink-0">
+            <button
+              v-if="can.contact"
+              class="btn-action w-full flex items-center justify-center gap-2"
+            >
               <MessageSquare class="w-4 h-4" />
               Contacter
             </button>
+            <p
+              v-else
+              class="w-full text-center text-text-muted font-marianne text-xs border border-border p-3"
+            >
+              Seuls les recruteurs peuvent contacter un profil.
+            </p>
 
             <div v-if="profile.isCertified" class="w-full p-4 border border-success/30 bg-success/5 flex flex-col items-center gap-2">
               <JebBadge :large="true" />
@@ -83,7 +149,7 @@ const hasConsent = ref(profile.hasConsent)
     </div>
 
     <!-- Zone de gestion (candidat uniquement) -->
-    <div v-if="isMyProfile" class="mt-12 p-8 border border-border bg-surface">
+    <div v-if="isMyProfile && can.publishVideo" class="mt-12 p-8 border border-border bg-surface">
       <h2 class="text-xl font-marianne font-bold text-primary mb-6">Gestion de ma vidéo (Zone Privée)</h2>
 
       <div class="bg-white p-6 border border-border">
