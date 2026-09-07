@@ -5,7 +5,7 @@ services:
 
   backend:
     build: ./backend
-    container_name: jibjob-backend
+    container_name: profilsactifs-backend
     restart: unless-stopped
     ports:
       - "${PORT}:${PORT}"
@@ -22,7 +22,7 @@ services:
 
   frontend:
     build: ./frontend
-    container_name: jibjob-frontend
+    container_name: profilsactifs-frontend
     restart: unless-stopped
     ports:
       - "5173:5173"
@@ -35,7 +35,7 @@ services:
 
   postgres:
     image: postgres:16
-    container_name: jibjob-db
+    container_name: profilsactifs-db
     restart: unless-stopped
     environment:
       POSTGRES_USER: ${POSTGRES_USER}

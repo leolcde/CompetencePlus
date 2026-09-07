@@ -7,16 +7,16 @@ import (
 	"net/http"
 	"os"
 
-	"jibjob/src/auth"
-	"jibjob/src/profils"
-	"jibjob/src/quiz"
-	utils "jibjob/src/utils"
+	"profilsactifs/src/auth"
+	"profilsactifs/src/profils"
+	"profilsactifs/src/quiz"
+	utils "profilsactifs/src/utils"
 
 	"gorm.io/gorm"
 )
 
 func handler(res http.ResponseWriter, req *http.Request) {
-	fmt.Fprint(res, "JibJob say Hello !")
+	fmt.Fprint(res, "ProfilsActifs say Hello !")
 }
 
 func health(gdb *gorm.DB) http.HandlerFunc {

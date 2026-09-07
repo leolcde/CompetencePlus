@@ -5,7 +5,7 @@ import (
 	"errors"
 	"net/http"
 
-	utils "jibjob/src/utils"
+	utils "profilsactifs/src/utils"
 
 	"gorm.io/gorm"
 )

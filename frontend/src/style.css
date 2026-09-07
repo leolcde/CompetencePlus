@@ -1,49 +1,78 @@
-    @import url('https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap');
-    @import 'tailwindcss';
-    @theme {
-        --color-primary: #1B3A6B;
-        --color-action: #D97706;
-        --color-action-foreground: #111827;
-        --color-background: #ffffff;
-        --color-surface: #f8fafc;
-        --color-border: #e2e8f0;
-        --color-text-main: #1f2937;
-        --color-text-muted: #4b5563;
-        --color-success: #059669;
-        --font-marianne: 'Marianne', system-ui, -apple-system, sans-serif;
-        --font-spectral: 'Spectral', Georgia, serif;
+@import url('https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap');
+@import 'tailwindcss';
+
+@theme {
+    /* Palette ProfilsActifs */
+    --color-primary: #4A001F;          /* bordeaux */
+    --color-primary-hover: #380018;
+    --color-secondary: #71677C;        /* gris-mauve */
+    --color-action: #C08552;           /* cuivre (accent) */
+    --color-action-hover: #A66E42;
+    --color-action-foreground: #ffffff;
+    --color-danger: #B3261E;
+    --color-success: #3F7A5C;
+
+    --color-background: #ffffff;
+    --color-surface: #f7f5f6;
+    --color-border: #e4e0e5;
+    --color-text-main: #2a2430;
+    --color-text-muted: #6b6370;
+
+    --font-marianne: 'Marianne', 'Segoe UI', system-ui, -apple-system, sans-serif;
+    --font-spectral: 'Spectral', Georgia, serif;
+}
+
+@layer base {
+    body {
+        @apply bg-background text-text-main font-spectral antialiased;
     }
-    
-    @layer base {
-        body {
-            @apply bg-background text-text-main font-spectral antialiased;
-        }
-        h1,
-        h2,
-        h3,
-        h4,
-        h5,
-        h6,
-        .font-marianne {
-            @apply font-marianne text-primary font-bold;
-        }
-        a,
-        .link {
-            @apply text-primary font-marianne;
-        }
-        .btn-action {
-            @apply inline-flex items-center justify-center bg-action text-action-foreground font-marianne font-semibold px-6 py-2.5 rounded-lg border border-transparent hover:opacity-90 transition-opacity;
-        }
-        .btn-secondary {
-            @apply inline-flex items-center justify-center bg-surface text-primary font-marianne font-medium px-6 py-2.5 border border-border rounded-lg hover:bg-gray-100 transition-colors cursor-pointer;
-        }
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6,
+    .font-marianne {
+        @apply font-marianne text-primary font-bold;
+    }
+    a,
+    .link {
+        @apply text-primary font-marianne;
     }
 
+    /* Bouton primaire : bordeaux plein */
+    .btn-action {
+        @apply inline-flex items-center justify-center gap-2 bg-primary text-white font-marianne font-semibold px-6 py-2.5 rounded-md border border-transparent transition-colors hover:bg-primary-hover disabled:opacity-50 disabled:cursor-not-allowed;
+    }
+    /* Bouton secondaire : contour bordeaux */
+    .btn-secondary {
+        @apply inline-flex items-center justify-center gap-2 bg-white text-primary font-marianne font-medium px-6 py-2.5 border border-primary/25 rounded-md transition-colors hover:bg-surface disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer;
+    }
+    /* Champs de formulaire */
+    .field {
+        @apply w-full border border-border bg-white px-3 py-2.5 rounded-md text-text-main font-spectral transition-colors focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/15;
+    }
+    .field-label {
+        @apply block font-marianne font-bold text-primary mb-1.5 text-sm;
+    }
+    /* Bandeaux d'état */
+    .alert-error {
+        @apply border border-danger/40 bg-danger/5 text-danger font-marianne text-sm p-3 rounded-md;
+    }
+    .alert-success {
+        @apply border border-success/40 bg-success/5 text-success font-marianne text-sm p-3 rounded-md;
+    }
+    /* Carte */
+    .card {
+        @apply bg-white border border-border rounded-lg;
+    }
+}
+
 @keyframes fadeInUp {
-  from { opacity: 0; transform: translateY(16px); }
-  to   { opacity: 1; transform: translateY(0); }
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
 }
 
 .animate-fade-up {
-  animation: fadeInUp 0.7s ease both;
+    animation: fadeInUp 0.6s ease both;
 }

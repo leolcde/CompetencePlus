@@ -3,10 +3,11 @@ import { computed, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { LogOut, Menu, Settings, X } from 'lucide-vue-next'
 import { useAuth } from '../stores/auth'
+import Logo from '../components/Logo.vue'
 
 const route = useRoute()
 const router = useRouter()
-const { user, isAuthenticated, isRecruiter, logout } = useAuth()
+const { user, isAuthenticated, isRecruiter, logout, can } = useAuth()
 
 const roleLabel = computed(() => (isRecruiter.value ? 'Recruteur' : 'Candidat'))
 const open = ref(false)
@@ -25,7 +26,6 @@ watch(
   }
 )
 
-// referme le menu à chaque changement de page
 watch(
   () => route.fullPath,
   () => {
@@ -33,9 +33,11 @@ watch(
   },
 )
 
-// liens visibles selon l'état de connexion
 const links = computed(() => {
-  const base = [{ label: 'Feed', to: { name: 'feed' } }]
+  const base = [{ label: 'Les profils', to: { name: 'profiles' } }]
+  if (isAuthenticated.value && can.value.publishVideo) {
+    base.push({ label: 'Ma vidéo', to: { name: 'upload' } })
+  }
   if (!isAuthenticated.value) {
     base.push({ label: "S'inscrire", to: { name: 'signup' } })
   }
@@ -53,12 +55,9 @@ function onLogout() {
     <header class="border-b border-border bg-white sticky top-0 z-50">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 h-16 sm:h-20 flex items-center justify-between">
         <RouterLink to="/" class="flex items-center shrink-0">
-          <span class="text-xl sm:text-2xl font-black text-primary font-marianne tracking-tight">
-            ProfilsActifs
-          </span>
+          <Logo :size="34" with-wordmark />
         </RouterLink>
 
-        <!-- Nav desktop -->
         <nav class="hidden md:flex items-center gap-6 lg:gap-8 font-marianne font-medium text-sm">
           <RouterLink
             v-for="link in links"
@@ -69,7 +68,6 @@ function onLogout() {
             {{ link.label }}
           </RouterLink>
 
-          <!-- Dropdown Connexion (non connecté) -->
           <div v-if="!isAuthenticated" class="relative">
             <button
               class="btn-action text-xs px-4 py-2 inline-flex items-center gap-1.5"
@@ -142,7 +140,6 @@ function onLogout() {
           </div>
         </nav>
 
-        <!-- Bouton menu mobile -->
         <button
           class="md:hidden inline-flex items-center justify-center w-10 h-10 -mr-2 text-primary"
           :aria-expanded="open"
@@ -154,7 +151,6 @@ function onLogout() {
         </button>
       </div>
 
-      <!-- Menu mobile déroulant -->
       <nav
         v-if="open"
         class="md:hidden border-t border-border bg-white px-4 py-4 flex flex-col gap-1 font-marianne font-medium"

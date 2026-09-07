@@ -2,12 +2,12 @@
 import { reactive, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuth } from '../stores/auth'
+import { initPending } from '../stores/certification'
 
 const router = useRouter()
 const route = useRoute()
-const { login } = useAuth()
+const { login, user } = useAuth()
 
-// pré-remplissage depuis le bouton "Je suis candidat / recruteur" (?type=)
 const initialRole = route.query.type === 'recruteur' ? 'recruiter' : 'candidate'
 
 const formData = reactive({
@@ -26,9 +26,8 @@ const formData = reactive({
 const loading = ref(false)
 const error = ref('')
 
-const inputClass =
-  'w-full border border-border p-3 rounded-none focus:outline-none focus:border-primary font-spectral'
-const labelClass = 'block font-marianne font-bold text-primary mb-2 text-sm'
+const inputClass = 'field'
+const labelClass = 'field-label'
 
 async function submit() {
   error.value = ''
@@ -65,9 +64,15 @@ async function submit() {
       return
     }
 
-    // inscription réussie -> on enchaîne sur un login pour récupérer le token
     await login(formData.email, formData.password)
-    router.push({ name: 'dashboard' })
+
+    // Les candidats doivent passer la certification JEB avant d'accéder à la plateforme
+    if (formData.role === 'candidate') {
+      if (user.value?.id) initPending(user.value.id)
+      router.push({ name: 'quiz' })
+    } else {
+      router.push({ name: 'dashboard' })
+    }
   } catch {
     error.value = 'Impossible de contacter le serveur.'
   } finally {
@@ -78,7 +83,7 @@ async function submit() {
 
 <template>
   <div class="flex-1 py-10 sm:py-16 px-6 bg-surface">
-    <div class="max-w-xl mx-auto bg-white p-6 sm:p-10 border border-border">
+    <div class="max-w-xl mx-auto card p-6 sm:p-10">
       <h1 class="text-3xl font-marianne font-bold text-primary mb-2">Inscription</h1>
       <p class="text-text-muted font-spectral mb-10">
         Rejoignez ProfilsActifs pour accéder à la plateforme.
@@ -86,7 +91,7 @@ async function submit() {
 
       <p
         v-if="error"
-        class="mb-6 border border-action bg-surface text-action font-marianne text-sm p-3"
+        class="mb-6 alert-error"
       >
         {{ error }}
       </p>
@@ -164,7 +169,7 @@ async function submit() {
             <input
               v-model="formData.consent"
               type="checkbox"
-              class="mt-1 w-5 h-5 border-border rounded-none text-action focus:ring-action"
+              class="mt-1 w-5 h-5 accent-primary"
               required
             />
             <span class="text-sm font-spectral text-text-main leading-snug">
