@@ -10,6 +10,11 @@ const id = String(route.params.id)
 const profile = MOCK_PROFILES.find(p => p.id === id) ?? MOCK_PROFILES[0]
 const isMyProfile = id === '1'
 const hasConsent = ref(profile.hasConsent)
+const videoInput = ref<HTMLInputElement | null>(null)
+
+function openFilePicker() {
+  videoInput.value?.click()
+}
 </script>
 
 <template>
@@ -84,10 +89,11 @@ const hasConsent = ref(profile.hasConsent)
 
     <!-- Zone de gestion (candidat uniquement) -->
     <div v-if="isMyProfile" class="mt-12 p-8 border border-border bg-surface">
-      <h2 class="text-xl font-marianne font-bold text-primary mb-6">Gestion de ma vidéo (Zone Privée)</h2>
-
+      <div class="flex items-center justify-between mb-6">
+        <h2 class="text-xl font-marianne font-bold text-primary">Gestion de ma vidéo (Zone Privée)</h2>
+        <RouterLink to="/upload-video" class="btn-secondary text-sm">Ajouter une vidéo</RouterLink>
+      </div>
       <div class="bg-white p-6 border border-border">
-        <div class="flex items-start gap-4 mb-6">
           <input
             v-model="hasConsent"
             type="checkbox"
@@ -101,7 +107,6 @@ const hasConsent = ref(profile.hasConsent)
             <p class="font-spectral text-sm text-text-main leading-relaxed">
               J'accepte expressément que ProfilsActifs diffuse ma vidéo de présentation sur la plateforme à destination des recruteurs. Je consens à l'utilisation de mon image et de ma voix dans le cadre exclusif de la mise en relation emploi.
             </p>
-          </div>
         </div>
 
         <div class="flex flex-col sm:flex-row sm:items-center justify-between pt-6 border-t border-border gap-4">
@@ -112,7 +117,6 @@ const hasConsent = ref(profile.hasConsent)
           <div v-else class="text-text-muted font-marianne text-sm italic">
             Aucun consentement actif. La vidéo est masquée.
           </div>
-
           <button
             :disabled="!hasConsent"
             class="btn-secondary text-sm disabled:opacity-50 disabled:cursor-not-allowed"

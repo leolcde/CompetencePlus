@@ -7,6 +7,8 @@ import LandingPage from '../views/LandingPage.vue'
 import Login from '../views/Login.vue'
 import Profile from '../views/Profile.vue'
 import Signup from '../views/Signup.vue'
+import CGU from '../views/CGU.vue'
+import UploadVideo from '../views/UploadVideo.vue'
 
 export const router = createRouter({
   history: createWebHistory(),
@@ -21,6 +23,8 @@ export const router = createRouter({
         { path: 'login', name: 'login', component: Login },
         { path: 'profil/:id', name: 'profile', component: Profile },
         { path: 'signup', name: 'signup', component: Signup },
+        { path: 'cgu', name: 'cgu', component: CGU },
+        { path : 'upload-video', name : 'upload-video', component : UploadVideo }
       ],
     },
   ],
