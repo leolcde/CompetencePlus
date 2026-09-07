@@ -4,6 +4,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { LogOut, Menu, Settings, X } from 'lucide-vue-next'
 import { useAuth } from '../stores/auth'
 import Logo from '../components/Logo.vue'
+import ComplianceBanner from '../components/ComplianceBanner.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -182,6 +183,8 @@ function onLogout() {
           Se déconnecter ({{ user?.name || user?.email }})
         </button>
       </nav>
+
+      <ComplianceBanner />
     </header>
 
     <main class="flex-1 flex flex-col">
