@@ -10,9 +10,12 @@ import {
 } from 'lucide-vue-next'
 import { MOCK_PROFILES } from '../assets/data/mock'
 import { useAuth } from '../stores/auth'
+import { getCert } from '../stores/certification'
 import JebBadge from '../assets/JebBadge.vue'
 
 const { user, fetchMe, isRecruiter, can } = useAuth()
+
+const cert = getCert(user.value?.id)
 
 // Champs non encore fournis par le backend : fallback sur le mock.
 const source = MOCK_PROFILES.find((p) => p.id === user.value?.id) ?? MOCK_PROFILES[0]
@@ -25,7 +28,6 @@ const form = reactive({
   skills: source.skills.join(', '),
 })
 
-// pas de vraies vidéos pour l'instant
 const hasConsent = ref(false)
 const saved = ref(false)
 const profileViews = 128
@@ -53,8 +55,8 @@ const skillList = computed(() =>
 )
 
 const inputClass =
-  'w-full border border-border p-3 rounded-none focus:outline-none focus:border-primary font-spectral'
-const labelClass = 'block font-marianne font-bold text-primary mb-2 text-sm'
+  'field'
+const labelClass = 'field-label'
 
 function save() {
   saved.value = true
@@ -65,7 +67,6 @@ function save() {
 <template>
   <div class="flex-1 bg-surface py-10 sm:py-16 px-6">
     <div class="max-w-5xl mx-auto space-y-10">
-      <!-- En-tête -->
       <div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
           <p class="font-marianne font-bold text-action text-xs uppercase tracking-wide mb-2">
@@ -89,15 +90,14 @@ function save() {
 
       <p
         v-if="loadError"
-        class="border border-action bg-surface text-action font-marianne text-sm p-3"
+        class="alert-error"
       >
         {{ loadError }}
       </p>
 
-      <!-- Statistiques -->
       <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <template v-if="isRecruiter">
-          <div class="bg-white border border-border p-6">
+          <div class="card p-6">
             <div class="flex items-center gap-2 text-text-muted font-marianne text-sm mb-3">
               <MessageSquare class="w-4 h-4" />
               Candidats contactés
@@ -106,17 +106,20 @@ function save() {
           </div>
         </template>
         <template v-else>
-          <div class="bg-white border border-border p-6">
+          <div class="card p-6">
             <div class="flex items-center gap-2 text-text-muted font-marianne text-sm mb-3">
               <ShieldCheck class="w-4 h-4" />
               Certification JEB
             </div>
             <p class="text-3xl font-marianne font-black text-primary">
-              {{ source.isCertified ? `${source.score}/100` : 'Non passée' }}
+              {{ cert?.done ? (cert.badge ? 'Certifié' : 'Non certifié') : 'Non passée' }}
+            </p>
+            <p v-if="cert?.done" class="font-marianne text-xs text-text-muted mt-1">
+              Score : {{ cert.score }}
             </p>
           </div>
 
-          <div class="bg-white border border-border p-6">
+          <div class="card p-6">
             <div class="flex items-center gap-2 text-text-muted font-marianne text-sm mb-3">
               <Video class="w-4 h-4" />
               Statut de la vidéo
@@ -130,7 +133,7 @@ function save() {
           </div>
         </template>
 
-        <div class="bg-white border border-border p-6">
+        <div class="card p-6">
           <div class="flex items-center gap-2 text-text-muted font-marianne text-sm mb-3">
             <Eye class="w-4 h-4" />
             Vues du profil
@@ -139,8 +142,7 @@ function save() {
         </div>
       </div>
 
-      <!-- Panneau recruteur -->
-      <div v-if="isRecruiter" class="bg-white border border-border p-8">
+      <div v-if="isRecruiter" class="card p-8">
         <h2 class="text-xl font-marianne font-bold text-primary mb-2">Espace recruteur</h2>
         <p class="font-spectral text-text-main mb-6">
           Parcourez les profils pour découvrir des candidats, contactez-les et likez ceux qui
@@ -149,33 +151,38 @@ function save() {
         <RouterLink :to="{ name: 'profiles' }" class="btn-action text-sm">Voir les profils</RouterLink>
       </div>
 
-      <!-- Certification (candidat) -->
       <div
-        v-if="!isRecruiter && source.isCertified"
-        class="bg-white border border-border p-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
+        v-if="!isRecruiter && cert?.done && cert.badge"
+        class="card p-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
       >
         <div class="flex items-center gap-4">
           <JebBadge :large="true" />
           <p class="font-spectral text-text-main">
-            Votre savoir-être professionnel est certifié. Score de {{ source.score }}/100.
+            Votre savoir-être professionnel est certifié. Score de {{ cert.score }}.
           </p>
         </div>
       </div>
-      <div v-else-if="!isRecruiter" class="bg-white border border-border p-8">
+      <div v-else-if="!isRecruiter && cert?.done" class="card p-8">
+        <h2 class="text-xl font-marianne font-bold text-primary mb-2">Certification non obtenue</h2>
+        <p class="font-spectral text-text-main mb-6">
+          Score de {{ cert.score }}. Vous pouvez repasser le questionnaire pour l'améliorer.
+        </p>
+        <RouterLink :to="{ name: 'quiz' }" class="btn-secondary text-sm">Repasser le test</RouterLink>
+      </div>
+      <div v-else-if="!isRecruiter" class="card p-8">
         <h2 class="text-xl font-marianne font-bold text-primary mb-2">Passez la certification JEB</h2>
         <p class="font-spectral text-text-main mb-6">
           Valorisez vos compétences douces auprès des recruteurs.
         </p>
-        <button class="btn-action text-sm">Commencer le test</button>
+        <RouterLink :to="{ name: 'quiz' }" class="btn-action text-sm">Commencer le test</RouterLink>
       </div>
 
-      <!-- Informations du profil -->
-      <div class="bg-white border border-border p-8 md:p-10">
+      <div class="card p-8 md:p-10">
         <h2 class="text-2xl font-marianne font-bold text-primary mb-8">Informations du profil</h2>
 
         <p
           v-if="saved"
-          class="mb-6 border border-success bg-surface text-success font-marianne text-sm p-3 flex items-center gap-2"
+          class="mb-6 alert-success flex items-center gap-2"
         >
           <CheckCircle2 class="w-4 h-4" />
           Modifications enregistrées.
@@ -221,59 +228,30 @@ function save() {
         </form>
       </div>
 
-      <!-- Gestion de la vidéo / consentement (candidat uniquement) -->
-      <div v-if="can.publishVideo" class="bg-white border border-border p-8 md:p-10">
-        <h2 class="text-2xl font-marianne font-bold text-primary mb-2">Ma vidéo de présentation</h2>
-        <p class="font-spectral text-text-main mb-8">
-          Vous contrôlez la diffusion de votre vidéo auprès des recruteurs.
-        </p>
+      <div v-if="can.publishVideo" class="card p-8 md:p-10">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+          <div>
+            <h2 class="text-2xl font-marianne font-bold text-primary">Ma vidéo de présentation</h2>
+            <p class="font-spectral text-text-main mt-1">
+              Vous contrôlez la diffusion de votre vidéo auprès des recruteurs.
+            </p>
+          </div>
+          <RouterLink :to="{ name: 'upload' }" class="btn-action text-sm shrink-0">
+            <Video class="w-4 h-4" />
+            {{ hasConsent ? 'Modifier ma vidéo' : 'Ajouter ma vidéo' }}
+          </RouterLink>
+        </div>
 
-        <div class="aspect-video bg-surface border border-border flex items-center justify-center mb-8">
+        <div class="aspect-video bg-surface border border-border rounded-md flex items-center justify-center">
           <img
             v-if="hasConsent"
             :src="source.videoUrl"
             :alt="`Vidéo de ${form.name}`"
-            class="w-full h-full object-cover grayscale opacity-90"
+            class="w-full h-full object-cover"
           />
           <div v-else class="flex flex-col items-center text-text-muted p-6 text-center">
             <AlertTriangle class="w-10 h-10 mb-3" />
-            <p class="font-marianne font-bold">Vidéo masquée</p>
-          </div>
-        </div>
-
-        <div class="border border-border p-6 bg-surface">
-          <label class="flex items-start gap-3 cursor-pointer">
-            <input
-              v-model="hasConsent"
-              type="checkbox"
-              class="mt-1 w-5 h-5 border-border rounded-none text-action focus:ring-action"
-            />
-            <span class="font-spectral text-sm text-text-main leading-relaxed">
-              J'accepte expressément que ProfilsActifs diffuse ma vidéo de présentation sur la
-              plateforme à destination des recruteurs, et l'utilisation de mon image et de ma voix
-              dans le cadre exclusif de la mise en relation emploi.
-            </span>
-          </label>
-
-          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-6 mt-6 border-t border-border">
-            <div
-              v-if="hasConsent"
-              class="flex items-center gap-2 text-success font-marianne font-bold text-sm"
-            >
-              <CheckCircle2 class="w-5 h-5" />
-              Consentement actif — vidéo publiée
-            </div>
-            <div v-else class="text-text-muted font-marianne text-sm italic">
-              Aucun consentement actif. La vidéo est masquée.
-            </div>
-
-            <button
-              :disabled="!hasConsent"
-              class="btn-secondary text-sm disabled:opacity-50 disabled:cursor-not-allowed"
-              @click="hasConsent = false"
-            >
-              Révoquer mon consentement
-            </button>
+            <p class="font-marianne font-bold">Aucune vidéo publiée</p>
           </div>
         </div>
       </div>

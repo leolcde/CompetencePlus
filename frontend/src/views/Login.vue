@@ -22,17 +22,8 @@ const title = computed(() => {
   return 'Connexion'
 })
 
-const bgImage = computed(() => {
-  if (route.query.type === 'candidat')
-    return 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=1600&fit=crop&auto=format'
-  if (route.query.type === 'recruteur')
-    return 'https://images.unsplash.com/photo-1521791136064-7986c2920216?w=1600&fit=crop&auto=format'
-  return null
-})
-
-const inputClass =
-  'w-full border border-border p-3 rounded-none focus:outline-none focus:border-primary font-spectral'
-const labelClass = 'block font-marianne font-bold text-primary mb-2 text-sm'
+const inputClass = 'field'
+const labelClass = 'field-label'
 
 async function submit() {
   error.value = ''
@@ -51,25 +42,14 @@ async function submit() {
 </script>
 
 <template>
-  <div class="flex-1 relative py-10 sm:py-16 px-6 bg-surface overflow-hidden">
-    <div
-      v-if="bgImage"
-      class="absolute inset-0 z-0 pointer-events-none opacity-[0.18]"
-      :style="`background-image: url('${bgImage}'); background-size: cover; background-position: center;`"
-      aria-hidden="true"
-    />
-    <div class="relative z-10 max-w-md mx-auto bg-white p-6 sm:p-10 border border-border rounded-xl">
+  <div class="flex-1 py-12 sm:py-20 px-6 bg-surface">
+    <div class="max-w-md mx-auto card p-6 sm:p-10">
       <h1 class="text-3xl font-marianne font-bold text-primary mb-2">{{ title }}</h1>
       <p class="text-text-muted font-spectral mb-10">
         Accédez à votre espace personnel ProfilsActifs.
       </p>
 
-      <p
-        v-if="error"
-        class="mb-6 border border-action bg-surface text-action font-marianne text-sm p-3"
-      >
-        {{ error }}
-      </p>
+      <p v-if="error" class="mb-6 alert-error">{{ error }}</p>
 
       <form class="space-y-6" @submit.prevent="submit">
         <div>
@@ -87,7 +67,7 @@ async function submit() {
             <input
               v-model="formData.remember"
               type="checkbox"
-              class="w-4 h-4 border-border rounded-none text-action focus:ring-action"
+              class="w-4 h-4 accent-primary"
             />
             <span class="text-sm font-spectral text-text-main">Se souvenir de moi</span>
           </label>

@@ -20,7 +20,6 @@ function requireAuth(): boolean {
   return false
 }
 
-// connecté mais rôle sans la permission -> action ignorée
 const canLike = computed(() => !isAuthenticated.value || can.value.like)
 const canContact = computed(() => !isAuthenticated.value || can.value.contact)
 
@@ -41,7 +40,6 @@ interface ProfileCard {
   hasConsent: boolean
 }
 
-// Liste mock affichée immédiatement, remplacée par GET /profils au montage.
 const mockList: ProfileCard[] = MOCK_PROFILES.map((p) => ({
   id: p.id,
   name: p.name,
@@ -78,7 +76,6 @@ onMounted(async () => {
   }
 })
 
-// --- Pagination (client, ?page=N dans l'URL pour partage) ---
 const totalPages = computed(() => Math.max(1, Math.ceil(profiles.value.length / PER_PAGE)))
 
 const page = computed(() => {
@@ -102,13 +99,11 @@ watch(totalPages, (max) => {
   if (page.value > max) goToPage(max)
 })
 
-// --- Vidéo : lecture uniquement au clic (pas d'autoplay) ---
 const playing = reactive<Set<string>>(new Set())
 function play(id: string) {
   playing.add(id)
 }
 
-// --- Like (état local par utilisateur, pas de compteur) ---
 const LS_KEY = 'feed_likes'
 
 function loadLiked(): Set<string> {
@@ -157,14 +152,12 @@ function toggleLike(id: string) {
         </RouterLink>
       </div>
 
-      <!-- Grille -->
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
         <article
           v-for="item in pageItems"
           :key="item.id"
-          class="bg-white border border-border flex flex-col"
+          class="card flex flex-col"
         >
-          <!-- Média : lecture au clic uniquement -->
           <div class="relative aspect-video bg-surface border-b border-border">
             <template v-if="item.hasConsent">
               <img
@@ -254,7 +247,6 @@ function toggleLike(id: string) {
         Aucun profil à afficher.
       </p>
 
-      <!-- Pagination -->
       <nav
         v-if="totalPages > 1"
         class="flex items-center justify-center gap-1 mt-10 font-marianne text-sm"
@@ -291,7 +283,6 @@ function toggleLike(id: string) {
       </nav>
     </div>
 
-    <!-- Modal choix connexion -->
     <div
       v-if="showAuthModal"
       class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"

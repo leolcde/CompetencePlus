@@ -12,12 +12,10 @@ const id = String(route.params.id)
 const base = MOCK_PROFILES.find(p => p.id === id) ?? MOCK_PROFILES[0]
 const profile = ref({ ...base })
 const isMyProfile = computed(() => isAuthenticated.value && id === user.value?.id)
-// pas de vraies vidéos pour l'instant -> placeholder "non disponible"
 const hasConsent = ref(false)
 const loading = ref(false)
 const error = ref('')
 
-// rôle : connu pour son propre profil (via /auth/me) ou si le profil le porte
 const profileRole = ref<string>('')
 const roleLabel = computed(() => {
   const r = profileRole.value || (isMyProfile.value ? user.value?.role : '')
@@ -65,10 +63,9 @@ onMounted(async () => {
     </RouterLink>
 
     <p v-if="loading" class="mb-4 text-sm text-text-muted font-marianne">Chargement de votre profil…</p>
-    <p v-if="error" class="mb-4 border border-action bg-surface text-action font-marianne text-sm p-3">{{ error }}</p>
+    <p v-if="error" class="mb-4 alert-error">{{ error }}</p>
 
-    <div class="bg-white border border-border">
-      <!-- Zone vidéo -->
+    <div class="card">
       <div class="w-full aspect-video bg-surface relative border-b border-border flex items-center justify-center">
         <img
           v-if="hasConsent"
@@ -148,17 +145,16 @@ onMounted(async () => {
       </div>
     </div>
 
-    <!-- Zone de gestion (candidat uniquement) -->
     <div v-if="isMyProfile && can.publishVideo" class="mt-12 p-8 border border-border bg-surface">
       <h2 class="text-xl font-marianne font-bold text-primary mb-6">Gestion de ma vidéo (Zone Privée)</h2>
 
-      <div class="bg-white p-6 border border-border">
+      <div class="card p-6">
         <div class="flex items-start gap-4 mb-6">
           <input
             v-model="hasConsent"
             type="checkbox"
             id="consent-checkbox"
-            class="mt-1 w-5 h-5 border-border rounded-none text-action focus:ring-action"
+            class="mt-1 w-5 h-5 accent-primary"
           />
           <div>
             <label for="consent-checkbox" class="font-marianne font-bold text-primary block mb-2 cursor-pointer">

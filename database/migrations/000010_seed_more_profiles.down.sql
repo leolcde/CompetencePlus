@@ -1,0 +1,22 @@
+DELETE FROM profiles WHERE email IN (
+    'amina.bensaid@email.com',
+    'thomas.lefevre@email.com',
+    'chloe.girard@email.com',
+    'yanis.meziane@email.com',
+    'sarah.dubois@email.com',
+    'hugo.faure@email.com',
+    'ines.chevalier@email.com',
+    'nathan.roux@email.com',
+    'lina.benali@email.com',
+    'enzo.marchand@email.com',
+    'camille.perrot@email.com',
+    'adam.rahmouni@email.com',
+    'manon.fontaine@email.com',
+    'lucas.berger@email.com',
+    'emma.lambert@email.com',
+    'baptiste.morel@email.com',
+    'lea.simon@email.com',
+    'rayan.cherif@email.com',
+    'julie.renard@email.com',
+    'maxime.petit@email.com'
+);

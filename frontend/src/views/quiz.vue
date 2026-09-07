@@ -1,6 +1,8 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
+import { ChevronLeft, ChevronRight, ShieldCheck } from 'lucide-vue-next'
 import { useAuth } from '../stores/auth'
+import { complete } from '../stores/certification'
 
 interface Question {
   id: number
@@ -11,126 +13,194 @@ interface Question {
 
 const { user } = useAuth()
 
-const profileId = ref<string>(user.value?.id ?? '1')
+const profileId = computed(() => Number(user.value?.id ?? 1))
 const questions = ref<Question[]>([])
 const answers = ref<Record<number, string>>({})
-const result = ref<unknown>(null)
-const log = ref<string[]>([])
-
 const current = ref(0)
+const error = ref('')
+const submitting = ref(false)
+const result = ref<{ score: number; badge: boolean } | null>(null)
 
-function push(msg: string) {
-  log.value.unshift(`${new Date().toLocaleTimeString()} — ${msg}`)
-}
+const total = computed(() => questions.value.length)
+const question = computed(() => questions.value[current.value])
+const answeredCount = computed(() => Object.keys(answers.value).length)
+const progress = computed(() => (total.value ? Math.round((answeredCount.value / total.value) * 100) : 0))
+const allAnswered = computed(() => total.value > 0 && answeredCount.value === total.value)
+
+onMounted(loadQuestions)
 
 async function loadQuestions() {
+  error.value = ''
   try {
     const res = await fetch('/quiz')
     const body = await res.json()
-    if (!res.ok) throw new Error(JSON.stringify(body))
+    if (!res.ok) throw new Error(String(res.status))
     questions.value = (body as Record<string, unknown>[]).map((r) => ({
       id: Number(r.id ?? r.ID ?? 0),
       content: String(r.content ?? r.Content ?? ''),
-      options: (r.options ?? r.Options ?? []) as string[],
+      options: (r.options ?? r.Options ?? ['Oui', 'Non']) as string[],
       weight: Number(r.weight ?? r.Weight ?? 0),
     }))
     current.value = 0
-    push(`${questions.value.length} questions chargées`)
-  } catch (e) {
-    push(`error GET /quiz : ${e instanceof Error ? e.message : String(e)}`)
+  } catch {
+    error.value = 'Impossible de charger le questionnaire.'
   }
 }
 
-async function pick(questionId: number, opt: string) {
-  answers.value[questionId] = opt
+async function pick(opt: string) {
+  if (!question.value) return
+  const qid = question.value.id
+  answers.value[qid] = opt
   try {
-    const res = await fetch('/quiz/answer', {
+    await fetch('/quiz/answer', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        profile_id: Number(profileId.value),
-        question_id: questionId,
-        options: [opt],
-      }),
+      body: JSON.stringify({ profile_id: profileId.value, question_id: qid, options: [opt] }),
     })
-    push(`réponse q${questionId}=${opt} → ${res.status}`)
-  } catch (e) {
-    push(`error POST /quiz/answer : ${e instanceof Error ? e.message : String(e)}`)
+  } catch {
+    /* la réponse locale reste, la synchro réessaiera à la validation */
   }
-}
-
-function next() {
-  if (current.value < questions.value.length - 1) current.value++
+  if (current.value < total.value - 1) setTimeout(() => current.value++, 150)
 }
 
 function prev() {
   if (current.value > 0) current.value--
 }
+function next() {
+  if (current.value < total.value - 1) current.value++
+}
 
 async function restart() {
   try {
-    const res = await fetch('/quiz/start', {
+    await fetch('/quiz/start', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ profile_id: Number(profileId.value) }),
+      body: JSON.stringify({ profile_id: profileId.value }),
     })
-    answers.value = {}
-    result.value = null
-    current.value = 0
-    push(`reset → ${res.status}`)
-  } catch (e) {
-    push(`error POST /quiz/start : ${e instanceof Error ? e.message : String(e)}`)
+  } catch {
+    /* ignore */
   }
+  answers.value = {}
+  result.value = null
+  current.value = 0
 }
 
 async function validate() {
+  submitting.value = true
+  error.value = ''
   try {
     const res = await fetch('/quiz/valider', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ profile_id: Number(profileId.value) }),
+      body: JSON.stringify({ profile_id: profileId.value }),
     })
-    result.value = await res.json()
-    push(`validation → ${res.status}`)
-  } catch (e) {
-    push(`error POST /quiz/valider : ${e instanceof Error ? e.message : String(e)}`)
+    const b = (await res.json()) as Record<string, unknown>
+    result.value = {
+      score: Number(b.total_score ?? b.TotalScore ?? 0),
+      badge: Boolean(b.badge_earned ?? b.BadgeEarned ?? false),
+    }
+    if (user.value?.id) complete(user.value.id, result.value.badge, result.value.score)
+  } catch {
+    error.value = 'La validation a échoué. Réessayez.'
+  } finally {
+    submitting.value = false
   }
 }
-
-onMounted(loadQuestions)
 </script>
 
 <template>
-  <div>
-    <h1>Quiz</h1>
-
-    <p>
-      profile_id :
-      <input v-model="profileId" />
-      <button @click="restart">Recommencer</button>
-    </p>
-
-    <div v-if="questions.length">
-      <p>Question {{ current + 1 }} / {{ questions.length }}</p>
-
-      <h2>{{ questions[current].content }}</h2>
-
-      <p v-for="opt in questions[current].options" :key="opt">
-        <button @click="pick(questions[current].id, opt)">{{ opt }}</button>
-        <span v-if="answers[questions[current].id] === opt"> — choisi</span>
+  <div class="flex-1 bg-surface py-10 sm:py-16 px-6">
+    <div class="max-w-2xl mx-auto">
+      <h1 class="text-3xl sm:text-4xl font-marianne font-black text-primary tracking-tight">
+        Certification JEB
+      </h1>
+      <p class="font-spectral text-text-muted mt-2">
+        Un court questionnaire de savoir-être professionnel :
+        <strong>communication</strong>, <strong>organisation</strong>, <strong>adaptabilité</strong>.
+        Répondez spontanément.
       </p>
 
-      <button @click="prev" :disabled="current === 0">Précédent</button>
-      <button @click="next" :disabled="current === questions.length - 1">Suivant</button>
-      <button @click="validate">Valider le quiz</button>
+      <p v-if="error" class="alert-error mt-6">{{ error }}</p>
+
+      <div v-if="result" class="card p-8 mt-8 text-center">
+        <ShieldCheck
+          class="w-12 h-12 mx-auto mb-3"
+          :class="result.badge ? 'text-action' : 'text-text-muted'"
+        />
+        <p class="font-marianne font-bold text-primary text-lg">
+          {{ result.badge ? 'Badge de certification obtenu' : 'Badge non obtenu' }}
+        </p>
+        <p class="font-spectral text-text-muted text-sm mt-1">
+          Score : {{ result.score }}
+        </p>
+        <div class="flex flex-col sm:flex-row gap-3 justify-center mt-6">
+          <RouterLink :to="{ name: 'dashboard' }" class="btn-action">Mon espace</RouterLink>
+          <button type="button" class="btn-secondary" @click="restart">Recommencer</button>
+        </div>
+      </div>
+
+      <template v-else-if="total">
+        <div class="mt-8 mb-4">
+          <div class="flex justify-between font-marianne text-xs text-text-muted mb-1.5">
+            <span>Question {{ current + 1 }} / {{ total }}</span>
+            <span>{{ answeredCount }} répondues</span>
+          </div>
+          <div class="h-1.5 bg-border rounded-full overflow-hidden">
+            <div class="h-full bg-action transition-all" :style="{ width: progress + '%' }" />
+          </div>
+        </div>
+
+        <div class="card p-6 sm:p-10">
+          <p class="font-marianne font-bold text-primary text-lg sm:text-xl leading-snug min-h-[3.5rem]">
+            {{ question.content }}
+          </p>
+
+          <div class="grid grid-cols-2 gap-3 mt-6">
+            <button
+              v-for="opt in question.options"
+              :key="opt"
+              type="button"
+              class="border rounded-md py-3 font-marianne font-semibold transition-colors"
+              :class="answers[question.id] === opt
+                ? 'bg-primary text-white border-primary'
+                : 'bg-white text-primary border-primary/25 hover:bg-surface'"
+              @click="pick(opt)"
+            >
+              {{ opt }}
+            </button>
+          </div>
+
+          <div class="flex items-center justify-between mt-8 pt-5 border-t border-border">
+            <button
+              type="button"
+              class="inline-flex items-center gap-1 text-sm font-marianne text-text-muted disabled:opacity-40"
+              :disabled="current === 0"
+              @click="prev"
+            >
+              <ChevronLeft class="w-4 h-4" /> Précédent
+            </button>
+            <button
+              type="button"
+              class="inline-flex items-center gap-1 text-sm font-marianne text-text-muted disabled:opacity-40"
+              :disabled="current === total - 1"
+              @click="next"
+            >
+              Suivant <ChevronRight class="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+
+        <button
+          type="button"
+          class="btn-action w-full mt-6"
+          :disabled="!allAnswered || submitting"
+          @click="validate"
+        >
+          {{ submitting ? 'Validation…' : allAnswered ? 'Valider le questionnaire' : `Répondez aux ${total - answeredCount} questions restantes` }}
+        </button>
+      </template>
+
+      <p v-else class="font-spectral text-text-muted mt-8">Aucune question disponible.</p>
     </div>
-
-    <p v-else>Aucune question chargée.</p>
-
-    <h2>Résultat</h2>
-    <pre>{{ result ? JSON.stringify(result, null, 2) : '(rien)' }}</pre>
-
-    <h2>Log</h2>
-    <pre>{{ log.join('\n') }}</pre>
   </div>
 </template>

@@ -117,7 +117,6 @@ async function fetchMe(): Promise<MeProfile> {
         }
       : permissionsFor(body.role),
   }
-  // garde le store user en phase avec le backend
   if (state.user) {
     setUser({ ...state.user, name: me.name || state.user.name, email: me.email || state.user.email, role: me.role })
   }
@@ -127,7 +126,6 @@ async function fetchMe(): Promise<MeProfile> {
 function logout() {
   state.user = null
   persist()
-  // futur : fetch('/auth/logout', { method: 'POST' })
 }
 
 /** En-tête Authorization à passer aux futurs appels protégés */

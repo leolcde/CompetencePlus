@@ -7,7 +7,7 @@ withDefaults(defineProps<{ large?: boolean }>(), { large: false })
 <template>
   <div
     :class="[
-      'inline-flex items-center gap-2 bg-success text-white font-marianne font-bold uppercase tracking-wide',
+      'inline-flex items-center gap-2 bg-action text-white font-marianne font-bold uppercase tracking-wide rounded',
       large ? 'px-4 py-2 text-sm' : 'px-3 py-1 text-xs',
     ]"
   >
