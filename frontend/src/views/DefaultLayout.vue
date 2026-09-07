@@ -182,6 +182,7 @@ function onLogout() {
           Se déconnecter ({{ user?.name || user?.email }})
         </button>
       </nav>
+
     </header>
 
     <main class="flex-1 flex flex-col">

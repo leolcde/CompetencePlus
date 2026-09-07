@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import Logo from '../components/Logo.vue'
 import { useAuth } from '../stores/auth'
+import ComplianceBanner from '../components/ComplianceBanner.vue'
 
 const { isAuthenticated } = useAuth()
 
@@ -55,6 +56,7 @@ const footerLinks = [
     </section>
 
     <footer class="bg-surface border-t border-border">
+      <ComplianceBanner />
       <div class="max-w-7xl mx-auto px-6 py-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <Logo :size="28" with-wordmark />
 
