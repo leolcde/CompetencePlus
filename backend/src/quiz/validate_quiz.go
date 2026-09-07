@@ -9,8 +9,6 @@ import (
 	"gorm.io/gorm"
 )
 
-// Validate calcule le score du profil et enregistre le résultat de certification.
-// POST /quiz/valider  { "profile_id": 1 }
 func Validate(gdb *gorm.DB) http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
 		var body struct {
@@ -18,27 +16,30 @@ func Validate(gdb *gorm.DB) http.HandlerFunc {
 		}
 		json.NewDecoder(req.Body).Decode(&body)
 
-		var reponses []utils.QuestionsAnswer
-		gdb.Where("profile_id = ?", body.ProfileID).Find(&reponses)
+		var answers []utils.QuestionsAnswer
+		gdb.Where("profile_id = ?", body.ProfileID).Find(&answers)
 
 		score := 0
-		for _, rep := range reponses {
-			if len(rep.Options) > 0 && rep.Options[0] == "Oui" {
+		for _, ans := range answers {
+			if len(ans.Options) > 0 && ans.Options[0] == "Oui" {
 				var q utils.Question
-				gdb.First(&q, rep.QuestionID)
+				gdb.First(&q, ans.QuestionID)
 				score += q.Weight
 			}
 		}
-		badge := score > 50
 
-		resultat := utils.CertificationResult{
+		var maxScore int
+		gdb.Model(&utils.Question{}).Select("COALESCE(SUM(weight), 0)").Scan(&maxScore)
+		badge := maxScore > 0 && score*100 >= maxScore*60
+
+		result := utils.CertificationResult{
 			ProfileID:   body.ProfileID,
 			TotalScore:  score,
 			BadgeEarned: badge,
 		}
-		gdb.Create(&resultat)
+		gdb.Create(&result)
 
 		res.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(res).Encode(resultat)
+		json.NewEncoder(res).Encode(result)
 	}
 }
