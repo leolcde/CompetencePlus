@@ -12,6 +12,7 @@ import Quiz from '../views/quiz.vue'
 import Signup from '../views/Signup.vue'
 import UploadVideo from '../views/UploadVideo.vue'
 import AdminLogin from '../views/AdminLogin.vue'
+import AdminDashboard from '../views/AdminDashboard.vue'
 
 export const router = createRouter({
   history: createWebHistory(),
@@ -39,6 +40,7 @@ export const router = createRouter({
       path: '/admin',
       children: [
         { path: 'login', name: 'admin-login', component: AdminLogin },
+        { path: 'dashboard', name: 'admin-dashboard', component: AdminDashboard },
       ]
     },
   ],
