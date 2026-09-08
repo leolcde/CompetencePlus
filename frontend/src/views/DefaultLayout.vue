@@ -4,6 +4,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { LogOut, Menu, Settings, X } from 'lucide-vue-next'
 import { useAuth } from '../stores/auth'
 import Logo from '../components/Logo.vue'
+import ComplianceBanner from '../components/ComplianceBanner.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -52,6 +53,7 @@ function onLogout() {
 
 <template>
   <div class="min-h-screen bg-background flex flex-col">
+    <ComplianceBanner />
     <header class="border-b border-border bg-white sticky top-0 z-50">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 h-16 sm:h-20 flex items-center justify-between">
         <RouterLink to="/" class="flex items-center shrink-0">
