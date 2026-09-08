@@ -11,6 +11,7 @@ import Profiles from '../views/Profiles.vue'
 import Quiz from '../views/quiz.vue'
 import Signup from '../views/Signup.vue'
 import UploadVideo from '../views/UploadVideo.vue'
+import AdminLogin from '../views/AdminLogin.vue'
 
 export const router = createRouter({
   history: createWebHistory(),
@@ -33,6 +34,12 @@ export const router = createRouter({
         { path: 'signup', name: 'signup', component: Signup },
         { path: ':pathMatch(.*)*', name: 'not-found', component: NotFound },
       ],
+    },
+    {
+      path: '/admin',
+      children: [
+        { path: 'login', name: 'admin-login', component: AdminLogin },
+      ]
     },
   ],
 })
