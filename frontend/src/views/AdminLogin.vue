@@ -30,7 +30,7 @@ async function submit() {
 </script>
 
 <template>
-    <div class="flex-1 py-12 sm:py-20 px-6 bg-surface">
+    <div class="min-h-screen py-12 sm:py-20 px-6 bg-surface flex items-center justify-center">
         <div class="max-w-md mx-auto card p-6 sm:p-10">
             <h1 class="text-3xl font-marianne font-bold text-center mb-2">Administration</h1>
             <p class="text-text-muted font-spectral mb-10">
