@@ -78,10 +78,12 @@ func validateQuestionnaire(res http.ResponseWriter, req *http.Request) {
 		}
 	}
 
+	var total int
+	DB.Model(&models.Question{}).Select("COALESCE(SUM(weight),0)").Scan(&total)
 	result := models.BadgeResult{
 		UserID: userID,
 		Score:  score,
-		Badge:  score > 50,
+		Badge:  total > 0 && score*100 >= total*60,
 	}
 	DB.Clauses(clause.OnConflict{UpdateAll: true}).Create(&result)
 

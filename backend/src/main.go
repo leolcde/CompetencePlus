@@ -65,8 +65,8 @@ func main() {
 	router.HandleFunc("POST /login", login)
 
 	router.HandleFunc("GET /me", requireAuth(Me))
-	router.HandleFunc("GET /users", requireAuth(listUsers))
-	router.HandleFunc("GET /users/{id}", requireAuth(getUser))
+	router.HandleFunc("GET /users", listUsers)
+	router.HandleFunc("GET /users/{id}", getUser)
 
 	router.HandleFunc("GET /consent", requireAuth(getConsent))
 	router.HandleFunc("POST /consent", requireAuth(approuveConsent))

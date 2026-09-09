@@ -18,7 +18,7 @@ func SeedQuestions(g *gorm.DB) error {
 		return nil
 	}
 
-	yesOrNo := pq.StringArray{"Yes", "No"}
+	yesOrNo := pq.StringArray{"Oui", "Non"}
 	contents := []string{
 		"I communicate easily with my colleagues.",
 		"I am comfortable speaking in public.",
