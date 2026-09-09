@@ -1,29 +1,27 @@
-
-
-# Database
 services:
-
   backend:
     build: ./backend
-    container_name: profilsactifs-backend
+    container_name: profilsactifs-back
     restart: unless-stopped
-    ports:
-      - "${PORT}:${PORT}"
     env_file:
-      - .env
+      - ".env"
     environment:
-      PORT: ${PORT}
-      DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}?sslmode=disable
+      DB_URL: "postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}?sslmode=disable"
       JWT_SECRET: ${JWT_SECRET}
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./backend/uploads:/app/uploads
     depends_on:
       postgres:
         condition: service_healthy
 
-
   frontend:
     build: ./frontend
-    container_name: profilsactifs-frontend
+    container_name: profilsactifs-front
     restart: unless-stopped
+    environment:
+      VITE_PROXY_TARGET: "http://backend:8080"
     ports:
       - "5173:5173"
     volumes:
@@ -31,7 +29,6 @@ services:
       - /app/node_modules
     depends_on:
       - backend
-
 
   postgres:
     image: postgres:16
