@@ -11,22 +11,9 @@ export default defineConfig({
     watch: {
       usePolling: true,
     },
-    proxy: {
-      '/auth': {
-        target: process.env.VITE_API_URL ?? 'http://backend:8080',
-        changeOrigin: true,
-      },
-      '/profils': {
-        target: process.env.VITE_API_URL ?? 'http://backend:8080',
-        changeOrigin: true,
-      },
-      '/quiz': {
-        target: process.env.VITE_API_URL ?? 'http://backend:8080',
-        changeOrigin: true,
-        bypass(req) {
-          if (req.headers.accept?.includes('text/html')) return '/index.html'
-        },
-      },
-    },
+  proxy: Object.fromEntries(
+    ['/login','/register','/me','/users','/questions','/questionnaire','/videos','/uploads','/consent','/health']
+      .map((p) => [p, { target: process.env.VITE_API_URL ?? 'http://backend:8080', changeOrigin: true }]),
+  ),
   },
 })
