@@ -12,7 +12,9 @@ export const router = createRouter({
     { path: '/candidats/:id', name: 'candidate', component: () => import('../views/CandidateView.vue') },
     { path: '/quiz', name: 'quiz', component: () => import('../views/QuizView.vue'), meta: { auth: true } },
     { path: '/ma-video', name: 'my-video', component: () => import('../views/MyVideoView.vue'), meta: { auth: true } },
-    { path: '/mon-espace', name: 'account', component: () => import('../views/AccountView.vue'), meta: { auth: true } },
+    // { path: '/mon-espace', name: 'account', component: () => import('../views/AccountView.vue'), meta: { auth: true } },
+    { path: '/mon-espace', name: 'account', component: () => import('../views/AccountView.vue') },
+
     { path: '/:pathMatch(.*)*', name: 'not-found', component: () => import('../views/NotFoundView.vue') },
   ],
 })
