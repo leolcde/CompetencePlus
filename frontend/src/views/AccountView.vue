@@ -77,7 +77,6 @@ async function grantConsent() {
     <p v-if="loading" class="text-sm text-text-muted font-marianne mb-4">Chargement…</p>
     <p v-if="error" class="alert-error mb-6">{{ error }}</p>
 
-    <!-- Informations personnelles -->
     <div class="card p-8 mb-8">
       <h2 class="text-xl font-marianne font-bold text-primary mb-6 pb-4 border-b border-border">
         Informations personnelles
@@ -156,7 +155,6 @@ async function grantConsent() {
       </div>
     </div>
 
-    <!-- Vidéo + consentement -->
     <div class="card mb-8">
       <div class="border-b border-border">
         <VideoPlayer v-if="videoUrl" :url="videoUrl" />
