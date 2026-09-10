@@ -118,7 +118,16 @@ func SeedUsers(g *gorm.DB) error {
 	if err := g.Create(&users).Error; err != nil {
 		return err
 	}
-	log.Printf("seed: %d users added (mot de passe: password123)", len(users))
+
+	videos := make([]models.Video, len(users))
+	for i, u := range users {
+		videos[i] = models.Video{UserID: u.ID, URL: "https://youtu.be/2PuFyjAs7JA?si=oyM4neB3Hr5E7Kja"}
+	}
+	if err := g.Create(&videos).Error; err != nil {
+		return err
+	}
+
+	log.Printf("seed: %d users + videos added (mot de passe: password123)", len(users))
 	return nil
 }
 
