@@ -5,7 +5,7 @@ import { useRouter } from 'vue-router'
 import { reactive, ref } from 'vue'
 
 const router = useRouter()
-const formData = reactive({ name: '', email: '', password: '', birthday: '' })
+const formData = reactive({ name: '', email: '', password: '', birthday: '', role: '' })
 const loading = ref(false)
 const error = ref('')
 
@@ -62,6 +62,13 @@ async function submit() {
                         Date de naissance
                     </label>
                     <input v-model="formData.birthday" type="date" class="field" required />
+                </div>
+                <div>
+                    <label class="field-label">Je m'inscris en tant que</label>
+                    <select v-model="formData.role" class="field">
+                        <option value="candidate">Candidat</option>
+                        <option value="recruiter">Recruteur</option>
+                    </select>
                 </div>
                 <button type="submit" class="btn-action w-full mt-8" :disabled="loading">
                     {{ loading ? 'Envoi...' : 'Valider mon inscription' }}
