@@ -13,6 +13,8 @@ export const router = createRouter({
     { path: '/quiz', name: 'quiz', component: () => import('../views/QuizView.vue'), meta: { auth: true } },
     { path: '/ma-video', name: 'my-video', component: () => import('../views/MyVideoView.vue'), meta: { auth: true } },
     { path: '/mon-espace', name: 'account', component: () => import('../views/AccountView.vue'), meta: { auth: true } },
+    { path: '/admin/login', name: 'admin-login', component: () => import('../views/AdminLogin.vue') },
+    { path: '/admin/dashboard', name: 'admin-dashboard', component: () => import('../views/AdminDashboard.vue'), meta: { auth: true } },
     { path: '/:pathMatch(.*)*', name: 'not-found', component: () => import('../views/NotFoundView.vue') },
   ],
 })
