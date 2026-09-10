@@ -1,3 +1,7 @@
+<script setup lang="ts">
+import { auth } from '../lib/auth'
+</script>
+
 <template>
     <section class="h-[calc(100dvh-4rem)] sm:h-[calc(100dvh-5rem)] snap-start relative flex flex-col items-center justify-center px-6 sm:px-12 text-center overflow-hidden">
       <div
@@ -11,10 +15,14 @@
           La mise en relation <br /> simple et transparente.
         </h1>
         <p class="text-xl md:text-2xl xl:text-3xl text-text-main font-spectral max-w-3xl xl:max-w-4xl mx-auto leading-relaxed font-medium mb-8 sm:mb-14">
-          ProfilsActifs est la plateforme gouvernementale permettant aux demandeurs d'emploi de se présenter en vidéo et aux recruteurs de découvrir des talents authentiques, certifiés JEB.
+          Compétences+ est la plateforme gouvernementale permettant aux demandeurs d'emploi de se présenter en vidéo et aux recruteurs de découvrir des talents authentiques.
         </p>
         <div class="flex flex-col sm:flex-row gap-4 sm:gap-6 justify-center w-full max-w-lg xl:max-w-xl 2xl:max-w-2xl">
-          <RouterLink to="/signup" class="btn-action w-full flex justify-center items-center text-lg shadow-md py-4">
+          <RouterLink
+            v-if="!auth.isLogged.value"
+            to="/signup"
+            class="btn-action w-full flex justify-center items-center text-lg shadow-md py-4"
+          >
             Inscription
           </RouterLink>
           <RouterLink to="/candidats" class="btn-secondary w-full text-lg shadow-sm bg-white/90 backdrop-blur-sm py-4">

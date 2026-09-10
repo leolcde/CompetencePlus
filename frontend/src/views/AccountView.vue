@@ -40,12 +40,11 @@ onMounted(async () => {
     } catch {
       badge.value = null
     }
-  }
-
-  try {
-    videoUrl.value = (await api.myVideo()).url || ''
-  } catch {
-    videoUrl.value = ''
+    try {
+      videoUrl.value = (await api.myVideo()).url || ''
+    } catch {
+      videoUrl.value = ''
+    }
   }
 })
 
@@ -156,7 +155,7 @@ async function grantConsent() {
       </div>
     </div>
 
-    <div class="card mb-8">
+    <div v-if="isCandidate" class="card mb-8">
       <div class="border-b border-border">
         <VideoPlayer v-if="videoUrl" :url="videoUrl" />
         <div v-else class="w-full aspect-video bg-surface flex flex-col items-center justify-center text-text-muted p-6 text-center">

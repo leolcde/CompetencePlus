@@ -11,7 +11,7 @@ export const router = createRouter({
     { path: '/candidats', name: 'candidates', component: () => import('../views/CandidatesView.vue') },
     { path: '/candidats/:id', name: 'candidate', component: () => import('../views/CandidateView.vue') },
     { path: '/quiz', name: 'quiz', component: () => import('../views/QuizView.vue'), meta: { auth: true } },
-    { path: '/ma-video', name: 'my-video', component: () => import('../views/MyVideoView.vue'), meta: { auth: true } },
+    { path: '/ma-video', name: 'my-video', component: () => import('../views/MyVideoView.vue'), meta: { auth: true, candidate: true } },
     { path: '/mon-espace', name: 'account', component: () => import('../views/AccountView.vue'), meta: { auth: true } },
     { path: '/admin/login', name: 'admin-login', component: () => import('../views/AdminLogin.vue') },
     { path: '/admin/dashboard', name: 'admin-dashboard', component: () => import('../views/AdminDashboard.vue'), meta: { auth: true, admin: true } },
@@ -25,5 +25,8 @@ router.beforeEach((to) => {
   }
   if (to.meta.admin && auth.user.value?.role !== 'admin') {
     return { name: 'home' }
+  }
+  if (to.meta.candidate && auth.user.value?.role !== 'candidate') {
+    return { name: 'account' }
   }
 })
