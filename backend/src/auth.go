@@ -89,6 +89,7 @@ func register(res http.ResponseWriter, req *http.Request) {
 		Email    string `json:"email"`
 		Password string `json:"password"`
 		Birthday string `json:"birthday"`
+		Role     string `json:"role"`
 	}
 
 	if err := json.NewDecoder(req.Body).Decode(&body); err != nil {
@@ -124,13 +125,18 @@ func register(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
+	role := "candidate"
+	if body.Role == "recruiter" {
+		role = "recruiter"
+	}
+
 	user := models.User{
 		Name:         body.Name,
 		Email:        strings.ToLower(body.Email),
 		PasswordHash: hash,
 		BirthDay:     birth,
 		Status:       status,
-		Role:         "candidate",
+		Role:         role,
 	}
 
 	if err := DB.Create(&user).Error; err != nil {

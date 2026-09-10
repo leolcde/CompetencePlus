@@ -1,10 +1,15 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
-import { AlertTriangle, CheckCircle2, MapPin, Mail, Briefcase, User } from 'lucide-vue-next'
+import { RouterLink } from 'vue-router'
+import { AlertTriangle, Award, CheckCircle2, MapPin, Mail, Briefcase, User } from 'lucide-vue-next'
 import { auth } from '../lib/auth'
 import { api } from '../lib/api'
+import type { BadgeResult } from '../type'
 
 const user = auth.user
+
+const badge = ref<BadgeResult | null>(null)
+const isCandidate = computed(() => user.value?.role === 'candidate')
 
 const roleLabel = computed(() => {
   if (user.value?.role === 'recruiter') return 'Recruteur'
@@ -24,6 +29,14 @@ onMounted(async () => {
     error.value = e instanceof Error ? e.message : 'Erreur de chargement'
   } finally {
     loading.value = false
+  }
+
+  if (isCandidate.value) {
+    try {
+      badge.value = await api.badge()
+    } catch {
+      badge.value = null
+    }
   }
 })
 
@@ -102,6 +115,31 @@ async function grantConsent() {
             Aucune compétence renseignée.
           </p>
         </div>
+      </div>
+    </div>
+
+    <!-- Badge de certification (candidat) -->
+    <div v-if="isCandidate" class="card p-8 mb-8">
+      <h2 class="text-xl font-marianne font-bold text-primary mb-6 pb-4 border-b border-border">
+        Certification savoir-être
+      </h2>
+
+      <div v-if="badge && badge.badge" class="flex items-center gap-4">
+        <Award class="w-12 h-12 text-action shrink-0" />
+        <div>
+          <p class="font-marianne font-bold text-primary">Badge obtenu</p>
+          <p class="font-spectral text-sm text-text-muted">Score : {{ badge.score }} / 20</p>
+        </div>
+      </div>
+
+      <div v-else class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <p class="font-spectral text-sm text-text-muted">
+          <template v-if="badge">Badge non obtenu (score {{ badge.score }} / 20).</template>
+          <template v-else>Vous n'avez pas encore passé le questionnaire.</template>
+        </p>
+        <RouterLink :to="{ name: 'quiz' }" class="btn-secondary text-sm shrink-0">
+          {{ badge ? 'Repasser le questionnaire' : 'Passer le questionnaire' }}
+        </RouterLink>
       </div>
     </div>
 

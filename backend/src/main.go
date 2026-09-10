@@ -60,6 +60,7 @@ func main() {
 	router.HandleFunc("POST /questionnaire/start", requireRole("candidate", startQuestionnaire))
 	router.HandleFunc("POST /questionnaire/answer", requireRole("candidate", submitAnswer))
 	router.HandleFunc("POST /questionnaire/validate", requireRole("candidate", validateQuestionnaire))
+	router.HandleFunc("GET /badge", requireAuth(getBadge))
 
 	router.HandleFunc("POST /register", register)
 	router.HandleFunc("POST /login", login)
