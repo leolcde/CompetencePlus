@@ -147,3 +147,16 @@ Le composant `LegalBanner` est monté dans `AppLayout`, donc affiché en permane
 sur **toutes** les pages :
 
 > Aucune donnée de ce service n'est utilisée pour déterminer vos droits ni le montant de vos allocations.
+
+## Miroir du dépôt
+
+Le projet est répliqué (historique complet, toutes les branches et tags) vers un
+dépôt public. Depuis un clone à jour :
+
+```bash
+git push --mirror git@github.com:leolcde/CompetencePlus.git
+```
+
+`--mirror` écrase le dépôt cible avec l'état exact de la source (les branches et
+tags absents en local y sont supprimés). À rejouer après chaque série de commits
+à publier.

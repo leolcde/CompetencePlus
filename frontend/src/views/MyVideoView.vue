@@ -54,7 +54,14 @@ async function toggleConsent() {
 }
 
 function onFile(e: Event) {
-  file.value = (e.target as HTMLInputElement).files?.[0] ?? null
+  const f = (e.target as HTMLInputElement).files?.[0] ?? null
+  error.value = ''
+  if (f && !f.type.startsWith('video/') && !/\.(mp4|webm|mov|m4v|ogg)$/i.test(f.name)) {
+    error.value = 'Ce fichier n\'est pas une vidéo.'
+    file.value = null
+    return
+  }
+  file.value = f
 }
 
 async function submit() {

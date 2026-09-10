@@ -29,9 +29,22 @@ func uploadFile(res http.ResponseWriter, req *http.Request, userID uint) {
 	defer file.Close()
 
 	extension := strings.ToLower(filepath.Ext(header.Filename))
-	if extension != ".mp4" && extension != ".webm" && extension != ".mov" {
-		http.Error(res, "unsupported format (mp4, webm, mov)", http.StatusBadRequest)
+	mimeType := header.Header.Get("Content-Type")
+
+	knownExt := extension == ".mp4" || extension == ".webm" || extension == ".mov" || extension == ".m4v" || extension == ".ogg"
+	if !knownExt && !strings.HasPrefix(mimeType, "video/") {
+		http.Error(res, "unsupported format (video files only)", http.StatusBadRequest)
 		return
+	}
+	if extension == "" {
+		switch mimeType {
+		case "video/webm":
+			extension = ".webm"
+		case "video/quicktime":
+			extension = ".mov"
+		default:
+			extension = ".mp4"
+		}
 	}
 
 	name := fmt.Sprintf("%d%s", time.Now().UnixNano(), extension)
