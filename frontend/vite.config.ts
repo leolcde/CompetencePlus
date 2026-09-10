@@ -11,9 +11,12 @@ export default defineConfig({
     watch: {
       usePolling: true,
     },
-  proxy: Object.fromEntries(
-    ['/login','/register','/me','/users','/questions','/questionnaire','/videos','/uploads','/consent','/health']
-      .map((p) => [p, { target: process.env.VITE_API_URL ?? 'http://backend:8080', changeOrigin: true }]),
-  ),
+    proxy: {
+      '/api': {
+        target: process.env.VITE_API_URL ?? 'http://backend:8080',
+        changeOrigin: true,
+        rewrite: (p) => p.replace(/^\/api/, ''),
+      },
+    }
   },
 })
