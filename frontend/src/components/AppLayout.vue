@@ -16,7 +16,7 @@ function onLogout() {
     <header class="sticky top-0 z-40 bg-white border-b border-border">
       <div class="max-w-5xl mx-auto px-4 h-14 flex items-center justify-between">
         <RouterLink :to="{ name: 'home' }" class="font-marianne font-black text-primary text-lg">
-          ProfilsActifs
+          Competences+
         </RouterLink>
         <nav class="flex items-center gap-4 font-marianne text-sm">
           <RouterLink :to="{ name: 'candidates' }" class="text-primary hover:underline">Candidats</RouterLink>
@@ -36,7 +36,7 @@ function onLogout() {
 
     <footer class="bg-white border-t border-border">
       <div class="max-w-5xl mx-auto px-4 py-4 text-xs text-text-muted font-marianne">
-        © {{ new Date().getFullYear() }} ProfilsActifs — République française
+        © {{ new Date().getFullYear() }} Competences+  République française
       </div>
     </footer>
   </div>
