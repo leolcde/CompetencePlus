@@ -63,6 +63,18 @@ func submitAnswer(res http.ResponseWriter, req *http.Request) {
 	fmt.Fprintf(res, "Answer saved for question %d", body.QuestionID)
 }
 
+func getBadge(res http.ResponseWriter, req *http.Request) {
+	userID := currentUserID(req)
+
+	var badge models.BadgeResult
+	if err := DB.First(&badge, "user_id = ?", userID).Error; err != nil {
+		badge = models.BadgeResult{UserID: userID}
+	}
+
+	res.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(res).Encode(badge)
+}
+
 func validateQuestionnaire(res http.ResponseWriter, req *http.Request) {
 	userID := currentUserID(req)
 
@@ -71,7 +83,7 @@ func validateQuestionnaire(res http.ResponseWriter, req *http.Request) {
 
 	score := 0
 	for _, answer := range answers {
-		if answer.Choice == "Yes" {
+		if answer.Choice == "Oui" {
 			var q models.Question
 			DB.First(&q, answer.QuestionID)
 			score += q.Weight

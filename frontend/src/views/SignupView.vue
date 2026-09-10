@@ -1,11 +1,11 @@
 <script setup lang="ts">
 
-import { register, login } from '../lib/auth'
+import { register } from '../lib/auth'
 import { useRouter } from 'vue-router'
 import { reactive, ref } from 'vue'
 
 const router = useRouter()
-const formData = reactive({ name: '', email: '', password: '', birthday: '', role: '' })
+const formData = reactive({ name: '', email: '', password: '', birthday: '', role: 'candidate' })
 const loading = ref(false)
 const error = ref('')
 
@@ -14,8 +14,7 @@ async function submit() {
     loading.value = true
     try {
         await register(formData)
-        await login(formData.email, formData.password)
-        router.push({ name: 'account' })
+        router.push({ name: formData.role === 'recruiter' ? 'candidates' : 'quiz' })
     } catch (e) {
         error.value = e instanceof Error ? e.message : 'Impossible de contacter le serveur.'
     } finally {

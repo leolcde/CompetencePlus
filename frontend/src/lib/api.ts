@@ -24,7 +24,7 @@ const body = (v: unknown) => JSON.stringify(v)
 
 export const api = {
   login: (email: string, password: string) => request<AuthResponse>('/login', { method: 'POST', body: body({ email, password }) }),
-  register: (v: { name: string; email: string; password: string; birthday: string }) => request<AuthResponse>('/register', { method: 'POST', body: body(v) }),
+  register: (v: { name: string; email: string; password: string; birthday: string; role?: string }) => request<AuthResponse>('/register', { method: 'POST', body: body(v) }),
   me: () => request<User>('/me'),
 
   users: () => request<User[]>('/users'),
@@ -34,6 +34,7 @@ export const api = {
   quizStart: () => request<string>('/questionnaire/start', { method: 'POST' }),
   quizAnswer: (question_id: number, choice: string) => request<string>('/questionnaire/answer', { method: 'POST', body: body({ question_id, choice }) }),
   quizValidate: () => request<BadgeResult>('/questionnaire/validate', { method: 'POST' }),
+  badge: () => request<BadgeResult>('/badge'),
 
   addVideoLink: (url: string) => request<Video>('/videos', { method: 'POST', body: body({ url }) }),
   addVideoFile: (file: File) => {
