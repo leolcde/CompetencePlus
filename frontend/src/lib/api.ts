@@ -45,6 +45,7 @@ export const api = {
 
   users: () => request<User[]>('/users'),
   user: (id: number | string) => request<User>(`/users/${id}`),
+  userVideo: (id: number | string) => request<Video>(`/users/${id}/video`),
 
   questions: () => request<Question[]>('/questions'),
   quizStart: () => request<string>('/questionnaire/start', { method: 'POST' }),

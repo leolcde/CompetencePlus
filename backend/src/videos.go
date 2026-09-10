@@ -86,6 +86,14 @@ func getMyVideo(res http.ResponseWriter, req *http.Request) {
 	json.NewEncoder(res).Encode(video)
 }
 
+func getUserVideo(res http.ResponseWriter, req *http.Request) {
+	var video models.Video
+	DB.Where("user_id = ?", req.PathValue("id")).Order("created_at DESC, id DESC").First(&video)
+
+	res.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(res).Encode(video)
+}
+
 func uploadVideo(res http.ResponseWriter, req *http.Request) {
 	userID := currentUserID(req)
 	contentType := req.Header.Get("Content-Type")
