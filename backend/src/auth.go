@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/lib/pq"
 )
 
 type ctxKey string
@@ -91,11 +92,14 @@ func corsMiddleware(next http.Handler) http.Handler {
 
 func register(res http.ResponseWriter, req *http.Request) {
 	var body struct {
-		Name     string `json:"name"`
-		Email    string `json:"email"`
-		Password string `json:"password"`
-		Birthday string `json:"birthday"`
-		Role     string `json:"role"`
+		Name     string   `json:"name"`
+		Email    string   `json:"email"`
+		Password string   `json:"password"`
+		Birthday string   `json:"birthday"`
+		Role     string   `json:"role"`
+		City     string   `json:"city"`
+		Sector   string   `json:"sector"`
+		Skills   []string `json:"skills"`
 	}
 
 	if err := json.NewDecoder(req.Body).Decode(&body); err != nil {
@@ -143,6 +147,9 @@ func register(res http.ResponseWriter, req *http.Request) {
 		BirthDay:     birth,
 		Status:       status,
 		Role:         role,
+		City:         body.City,
+		Sector:       body.Sector,
+		Skills:       pq.StringArray(body.Skills),
 	}
 
 	if err := DB.Create(&user).Error; err != nil {

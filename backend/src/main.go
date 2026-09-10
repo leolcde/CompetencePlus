@@ -48,6 +48,10 @@ func main() {
 		log.Fatal(err)
 	}
 
+	if err := db.SeedAdmins(DB); err != nil {
+		log.Fatal(err)
+	}
+
 	if err := os.MkdirAll("uploads", 0o755); err != nil {
 		log.Fatal(err)
 	}

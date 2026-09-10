@@ -121,3 +121,44 @@ func SeedUsers(g *gorm.DB) error {
 	log.Printf("seed: %d users added (mot de passe: password123)", len(users))
 	return nil
 }
+
+func SeedAdmins(g *gorm.DB) error {
+	hash, err := bcrypt.GenerateFromPassword([]byte("password123"), bcrypt.DefaultCost)
+	if err != nil {
+		return err
+	}
+
+	names := []string{"maryam", "kevser", "leo"}
+	added := 0
+	for _, name := range names {
+		email := name + "@competences.fr"
+
+		var count int64
+		if err := g.Model(&models.User{}).Where("email = ?", email).Count(&count).Error; err != nil {
+			return err
+		}
+		if count > 0 {
+			continue
+		}
+
+		admin := models.User{
+			Name:         name,
+			Email:        email,
+			PasswordHash: string(hash),
+			BirthDay:     time.Date(1995, 1, 1, 0, 0, 0, 0, time.UTC),
+			Status:       string(models.StatusAdult),
+			Sector:       "Direction",
+			City:         "Paris",
+			Role:         string(models.Admin),
+		}
+		if err := g.Create(&admin).Error; err != nil {
+			return err
+		}
+		added++
+	}
+
+	if added > 0 {
+		log.Printf("seed: %d admins added (mot de passe: password123)", added)
+	}
+	return nil
+}

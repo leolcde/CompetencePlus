@@ -23,7 +23,16 @@ export async function login(email: string, password: string) {
   save(r.token, r.user)
 }
 
-export async function register(v: { name: string; email: string; password: string; birthday: string; role?: string }) {
+export async function register(v: {
+  name: string
+  email: string
+  password: string
+  birthday: string
+  role?: string
+  city?: string
+  sector?: string
+  skills?: string[]
+}) {
   const r = await api.register(v)
   save(r.token, r.user)
 }

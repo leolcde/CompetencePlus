@@ -31,7 +31,16 @@ const body = (v: unknown) => JSON.stringify(v)
 
 export const api = {
   login: (email: string, password: string) => request<AuthResponse>('/login', { method: 'POST', body: body({ email, password }) }),
-  register: (v: { name: string; email: string; password: string; birthday: string; role?: string }) => request<AuthResponse>('/register', { method: 'POST', body: body(v) }),
+  register: (v: {
+    name: string
+    email: string
+    password: string
+    birthday: string
+    role?: string
+    city?: string
+    sector?: string
+    skills?: string[]
+  }) => request<AuthResponse>('/register', { method: 'POST', body: body(v) }),
   me: () => request<User>('/me'),
 
   users: () => request<User[]>('/users'),

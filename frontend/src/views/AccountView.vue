@@ -2,7 +2,7 @@
 import { ref, onMounted, computed } from 'vue'
 import { RouterLink } from 'vue-router'
 import { AlertTriangle, Award, CheckCircle2, MapPin, Mail, Briefcase, User, ArrowLeft } from 'lucide-vue-next'
-import { auth } from '../lib/auth'
+import { auth, refreshMe } from '../lib/auth'
 import { api } from '../lib/api'
 import type { BadgeResult } from '../type'
 import VideoPlayer from '../components/VideoPlayer.vue'
@@ -25,6 +25,7 @@ const error = ref('')
 
 onMounted(async () => {
   try {
+    await refreshMe()
     const consent = await api.consent()
     hasConsent.value = consent.active
   } catch (e) {
@@ -104,12 +105,12 @@ async function grantConsent() {
         <div class="flex items-center gap-3 font-marianne text-sm">
           <MapPin class="w-4 h-4 text-text-muted shrink-0" />
           <span class="text-text-muted w-24">Ville</span>
-          <span class="text-primary">{{ user?.city }}</span>
+          <span class="text-primary">{{ user?.city || "Non renseignée" }}</span>
         </div>
         <div class="flex items-center gap-3 font-marianne text-sm">
           <Briefcase class="w-4 h-4 text-text-muted shrink-0" />
           <span class="text-text-muted w-24">Secteur</span>
-          <span class="text-primary">{{ user?.sector }}</span>
+          <span class="text-primary">{{ user?.sector || "Non renseigné" }}</span>
         </div>
       </div>
 
