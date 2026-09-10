@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
 import { RouterLink } from 'vue-router'
-import { AlertTriangle, Award, CheckCircle2, MapPin, Mail, Briefcase, User } from 'lucide-vue-next'
+import { AlertTriangle, Award, CheckCircle2, MapPin, Mail, Briefcase, User, ArrowLeft } from 'lucide-vue-next'
 import { auth } from '../lib/auth'
 import { api } from '../lib/api'
 import type { BadgeResult } from '../type'
@@ -61,6 +61,11 @@ async function grantConsent() {
 
 <template>
   <div class="max-w-4xl mx-auto px-6 py-12 w-full">
+    <RouterLink to="/candidats" class="inline-flex items-center gap-2 text-sm text-primary font-marianne font-medium hover:underline mb-8">
+      <ArrowLeft class="w-4 h-4" />
+      Retour
+    </RouterLink>
+
     <p v-if="loading" class="text-sm text-text-muted font-marianne mb-4">Chargement…</p>
     <p v-if="error" class="alert-error mb-6">{{ error }}</p>
 
