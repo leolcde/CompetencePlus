@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import { RouterLink, useRouter } from 'vue-router'
 import { auth, logout } from '../lib/auth'
 import LegalBanner from './LegalBanner.vue'
@@ -9,6 +10,41 @@ function onLogout() {
   logout()
   router.push({ name: 'home' })
 }
+
+const year = new Date().getFullYear()
+
+const footerColumns = computed(() => {
+  const columns = [
+    {
+      title: 'Navigation',
+      links: [
+        { label: 'Accueil', to: { name: 'home' } },
+        { label: 'Les candidats', to: { name: 'candidates' } },
+      ],
+    },
+  ]
+
+  if (auth.isLogged.value) {
+    columns.push({
+      title: 'Mon compte',
+      links: [
+        { label: 'Mon espace', to: { name: 'account' } },
+        { label: 'Le questionnaire', to: { name: 'quiz' } },
+        { label: 'Ma vidéo', to: { name: 'my-video' } },
+      ],
+    })
+  } else {
+    columns.push({
+      title: 'Accès',
+      links: [
+        { label: 'Se connecter', to: { name: 'login' } },
+        { label: "S'inscrire", to: { name: 'signup' } },
+      ],
+    })
+  }
+
+  return columns
+})
 </script>
 
 <template>
@@ -30,16 +66,45 @@ function onLogout() {
           </template>
         </nav>
       </div>
-      <LegalBanner />
+
     </header>
 
     <main class="flex-1">
       <slot />
     </main>
 
-    <footer class="bg-white border-t border-border">
-      <div class="max-w-5xl mx-auto px-4 py-4 text-xs text-text-muted font-marianne">
-        © {{ new Date().getFullYear() }} Competences+  République française
+    <footer class="bg-white border-t border-border mt-auto">
+      <LegalBanner />
+      <div class="max-w-5xl mx-auto px-6 py-10">
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-8">
+          <div>
+            <span class="text-lg font-marianne font-black text-primary tracking-tight">Competences+</span>
+            <p class="text-text-muted font-spectral text-sm leading-relaxed mt-2">
+              Plateforme de mise en relation entre demandeurs d'emploi et recruteurs :
+              présentation vidéo et questionnaire de savoir-être.
+            </p>
+          </div>
+
+          <div v-for="col in footerColumns" :key="col.title">
+            <h3 class="font-marianne font-bold text-primary text-sm uppercase tracking-wide mb-3">
+              {{ col.title }}
+            </h3>
+            <ul class="space-y-2">
+              <li v-for="link in col.links" :key="link.label">
+                <RouterLink
+                  :to="link.to"
+                  class="text-text-muted hover:text-primary font-marianne text-sm hover:underline underline-offset-4 transition-colors"
+                >
+                  {{ link.label }}
+                </RouterLink>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <p class="mt-8 pt-6 border-t border-border text-text-muted font-marianne text-xs">
+          © {{ year }} Competences+
+        </p>
       </div>
     </footer>
   </div>
