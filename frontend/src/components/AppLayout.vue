@@ -24,7 +24,10 @@ function onLogout() {
             <RouterLink :to="{ name: 'account' }" class="text-primary hover:underline">Mon espace</RouterLink>
             <button class="btn-secondary text-xs px-3 py-1.5" @click="onLogout">Se déconnecter</button>
           </template>
-          <RouterLink v-else :to="{ name: 'login' }" class="btn-action text-xs px-3 py-1.5">Se connecter</RouterLink>
+          <template v-else>
+            <RouterLink :to="{ name: 'signup' }" class="btn-secondary text-xs px-3 py-1.5">S'inscrire</RouterLink>
+            <RouterLink :to="{ name: 'login' }" class="btn-action text-xs px-3 py-1.5">Se connecter</RouterLink>
+          </template>
         </nav>
       </div>
       <LegalBanner />
