@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import { reactive, ref } from 'vue'
-import { useRouter } from 'vue-router'
-import { login } from '../lib/auth'
+import { useRoute, useRouter } from 'vue-router'
+import { login, auth } from '../lib/auth'
 
 const router = useRouter()
+const route = useRoute()
 const formData = reactive({ email: '', password: '' })
 const loading = ref(false)
 const error = ref('')
@@ -13,7 +14,12 @@ async function submit() {
   loading.value = true
   try {
     await login(formData.email, formData.password)
-    router.push({ name: 'account' })
+    if (auth.user.value?.role === 'admin') {
+      router.push({ name: 'admin-dashboard' })
+    } else {
+      const redirect = route.query.redirect
+      router.push(typeof redirect === 'string' ? redirect : { name: 'account' })
+    }
   } catch (e) {
     error.value = e instanceof Error ? e.message : 'Impossible de contacter le serveur.'
   } finally {

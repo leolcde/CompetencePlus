@@ -14,7 +14,7 @@ export const router = createRouter({
     { path: '/ma-video', name: 'my-video', component: () => import('../views/MyVideoView.vue'), meta: { auth: true } },
     { path: '/mon-espace', name: 'account', component: () => import('../views/AccountView.vue'), meta: { auth: true } },
     { path: '/admin/login', name: 'admin-login', component: () => import('../views/AdminLogin.vue') },
-    { path: '/admin/dashboard', name: 'admin-dashboard', component: () => import('../views/AdminDashboard.vue'), meta: { auth: true } },
+    { path: '/admin/dashboard', name: 'admin-dashboard', component: () => import('../views/AdminDashboard.vue'), meta: { auth: true, admin: true } },
     { path: '/:pathMatch(.*)*', name: 'not-found', component: () => import('../views/NotFoundView.vue') },
   ],
 })
@@ -22,5 +22,8 @@ export const router = createRouter({
 router.beforeEach((to) => {
   if (to.meta.auth && !auth.isLogged.value) {
     return { name: 'login', query: { redirect: to.fullPath } }
+  }
+  if (to.meta.admin && auth.user.value?.role !== 'admin') {
+    return { name: 'home' }
   }
 })
