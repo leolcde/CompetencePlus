@@ -5,10 +5,12 @@ import { AlertTriangle, Award, CheckCircle2, MapPin, Mail, Briefcase, User, Arro
 import { auth } from '../lib/auth'
 import { api } from '../lib/api'
 import type { BadgeResult } from '../type'
+import VideoPlayer from '../components/VideoPlayer.vue'
 
 const user = auth.user
 
 const badge = ref<BadgeResult | null>(null)
+const videoUrl = ref('')
 const isCandidate = computed(() => user.value?.role === 'candidate')
 
 const roleLabel = computed(() => {
@@ -37,6 +39,12 @@ onMounted(async () => {
     } catch {
       badge.value = null
     }
+  }
+
+  try {
+    videoUrl.value = (await api.myVideo()).url || ''
+  } catch {
+    videoUrl.value = ''
   }
 })
 
@@ -150,11 +158,13 @@ async function grantConsent() {
 
     <!-- Vidéo + consentement -->
     <div class="card mb-8">
-      <div class="w-full aspect-video bg-surface border-b border-border flex items-center justify-center">
-        <div class="flex flex-col items-center justify-center text-text-muted p-6 text-center">
+      <div class="border-b border-border">
+        <VideoPlayer v-if="videoUrl" :url="videoUrl" />
+        <div v-else class="w-full aspect-video bg-surface flex flex-col items-center justify-center text-text-muted p-6 text-center">
           <AlertTriangle class="w-12 h-12 mb-4" />
           <p class="font-marianne font-bold text-lg mb-2">Vidéo non disponible</p>
-          <p class="font-spectral">Aucune vidéo uploadée.</p>
+          <p class="font-spectral mb-4">Aucune vidéo uploadée.</p>
+          <RouterLink :to="{ name: 'my-video' }" class="btn-action text-sm">Ajouter une vidéo</RouterLink>
         </div>
       </div>
 

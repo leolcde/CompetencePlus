@@ -8,9 +8,9 @@ import (
 )
 
 func Connect() (*gorm.DB, error) {
-	dsn := os.Getenv("DB_URL") // provided by docker-compose (host = "postgres")
+	dsn := os.Getenv("DB_URL")
 	if dsn == "" {
-		dsn = os.Getenv("POSTGRES_URL") // local dev fallback (host = "localhost")
+		dsn = os.Getenv("POSTGRES_URL")
 	}
 	return gorm.Open(postgres.Open(dsn), &gorm.Config{})
 }

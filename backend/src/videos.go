@@ -76,6 +76,16 @@ func uploadLink(res http.ResponseWriter, req *http.Request, userID uint) {
 	json.NewEncoder(res).Encode(video)
 }
 
+func getMyVideo(res http.ResponseWriter, req *http.Request) {
+	userID := currentUserID(req)
+
+	var video models.Video
+	DB.Where("user_id = ?", userID).Order("created_at DESC, id DESC").First(&video)
+
+	res.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(res).Encode(video)
+}
+
 func uploadVideo(res http.ResponseWriter, req *http.Request) {
 	userID := currentUserID(req)
 	contentType := req.Header.Get("Content-Type")

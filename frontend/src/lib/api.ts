@@ -13,6 +13,13 @@ async function request<T>(path: string, opts: RequestInit = {}): Promise<T> {
       ...opts.headers,
     },
   })
+  if (res.status === 401 && token) {
+    localStorage.removeItem('token')
+    localStorage.removeItem('user')
+    location.assign('/login')
+    throw new Error('Session expirée, reconnectez-vous.')
+  }
+
   const raw = await res.text()
   let data: unknown = null
   try { data = raw ? JSON.parse(raw) : null } catch { data = raw }
@@ -35,6 +42,7 @@ export const api = {
   quizAnswer: (question_id: number, choice: string) => request<string>('/questionnaire/answer', { method: 'POST', body: body({ question_id, choice }) }),
   quizValidate: () => request<BadgeResult>('/questionnaire/validate', { method: 'POST' }),
   badge: () => request<BadgeResult>('/badge'),
+  myVideo: () => request<Video>('/videos'),
 
   addVideoLink: (url: string) => request<Video>('/videos', { method: 'POST', body: body({ url }) }),
   addVideoFile: (file: File) => {

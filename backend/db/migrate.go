@@ -13,5 +13,6 @@ func AutoMigrate(g *gorm.DB) error {
 		&models.Question{},
 		&models.Answer{},
 		&models.BadgeResult{},
+		&models.Consent{},
 	)
 }

@@ -2,10 +2,13 @@ package db
 
 import (
 	"log"
+	"strings"
+	"time"
 
 	"profilsactifs/models"
 
 	"github.com/lib/pq"
+	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 )
 
@@ -51,5 +54,70 @@ func SeedQuestions(g *gorm.DB) error {
 		return err
 	}
 	log.Printf("seed: %d questions added", len(questions))
+	return nil
+}
+
+func SeedUsers(g *gorm.DB) error {
+	var count int64
+	if err := g.Model(&models.User{}).Count(&count).Error; err != nil {
+		return err
+	}
+	if count > 0 {
+		return nil
+	}
+
+	hash, err := bcrypt.GenerateFromPassword([]byte("password123"), bcrypt.DefaultCost)
+	if err != nil {
+		return err
+	}
+
+	type spec struct {
+		name, city, sector, role string
+		skills                   []string
+		year                     int
+	}
+	specs := []spec{
+		{"Alice Martin", "Paris", "Communication", "candidate", []string{"Rédaction web", "Réseaux sociaux"}, 1998},
+		{"Lucas Bernard", "Lyon", "Développement", "candidate", []string{"Go", "PostgreSQL", "Docker"}, 1996},
+		{"Emma Petit", "Marseille", "Design", "candidate", []string{"Figma", "UX", "Illustration"}, 1999},
+		{"Hugo Robert", "Toulouse", "Data", "candidate", []string{"Python", "SQL", "Pandas"}, 1997},
+		{"Chloe Richard", "Nantes", "Marketing", "candidate", []string{"SEO", "Google Ads"}, 2000},
+		{"Nathan Durand", "Nice", "Développement", "candidate", []string{"Vue.js", "TypeScript"}, 1995},
+		{"Lea Moreau", "Strasbourg", "RH", "candidate", []string{"Recrutement", "Paie"}, 1994},
+		{"Tom Laurent", "Montpellier", "Support", "candidate", []string{"Zendesk", "Relation client"}, 2001},
+		{"Manon Simon", "Bordeaux", "Comptabilité", "candidate", []string{"Sage", "Excel"}, 1993},
+		{"Enzo Michel", "Lille", "Logistique", "candidate", []string{"SAP", "Gestion de stock"}, 1998},
+		{"Camille Garcia", "Rennes", "Communication", "candidate", []string{"Événementiel", "Relations presse"}, 1999},
+		{"Louis David", "Reims", "Développement", "candidate", []string{"Java", "Spring"}, 1996},
+		{"Sarah Bertrand", "Le Havre", "Design", "candidate", []string{"Photoshop", "Branding"}, 1997},
+		{"Jules Roux", "Dijon", "Data", "candidate", []string{"Power BI", "SQL"}, 2000},
+		{"Ines Vincent", "Grenoble", "Marketing", "candidate", []string{"Content", "Emailing"}, 1995},
+		{"Adam Fournier", "Angers", "Développement", "candidate", []string{"Node.js", "React"}, 1998},
+		{"Julie Girard", "Nimes", "RH", "candidate", []string{"Formation", "SIRH"}, 1994},
+		{"Raphael Bonnet", "Metz", "Support", "candidate", []string{"ITIL", "Diagnostic"}, 2001},
+		{"Claire Dupont", "Tours", "Recrutement", "recruiter", nil, 1990},
+		{"Marc Leroy", "Paris", "Direction", "admin", nil, 1985},
+	}
+
+	users := make([]models.User, len(specs))
+	for i, s := range specs {
+		email := strings.ToLower(strings.ReplaceAll(s.name, " ", ".")) + "@competences.fr"
+		users[i] = models.User{
+			Name:         s.name,
+			Email:        email,
+			PasswordHash: string(hash),
+			BirthDay:     time.Date(s.year, 6, 15, 0, 0, 0, 0, time.UTC),
+			Status:       string(models.StatusAdult),
+			Skills:       pq.StringArray(s.skills),
+			Sector:       s.sector,
+			City:         s.city,
+			Role:         s.role,
+		}
+	}
+
+	if err := g.Create(&users).Error; err != nil {
+		return err
+	}
+	log.Printf("seed: %d users added (mot de passe: password123)", len(users))
 	return nil
 }

@@ -1,102 +1,55 @@
-# ProfilsActifs
+<h1 align="center">ProfilsActifs</h1>
 
-Monorepo : `backend/` (API Go), `frontend/` (Vue 3 + Vite), `database/` (migrations SQL).
+<p align="center">
+  <b>Plateforme de mise en relation entre demandeurs d'emploi et recruteurs</b><br/>
+  Présentation vidéo · questionnaire de savoir-être · badge de certification
+</p>
 
-## Prérequis
+<p align="center">
+  <img src="https://img.shields.io/badge/backend-Go%201.26-00ADD8?style=flat-square&logo=go&logoColor=white" />
+  <img src="https://img.shields.io/badge/frontend-Vue%203%20%2B%20Vite-4FC08D?style=flat-square&logo=vuedotjs&logoColor=white" />
+  <img src="https://img.shields.io/badge/db-PostgreSQL%2016-4169E1?style=flat-square&logo=postgresql&logoColor=white" />
+  <img src="https://img.shields.io/badge/run-Docker%20Compose-2496ED?style=flat-square&logo=docker&logoColor=white" />
+</p>
 
-- Docker + Docker Compose
-- Pour un lancement manuel : Go 1.25+, Node 22+, PostgreSQL 16
+---
 
-## Configuration
+## À propos
 
-Copier le fichier d'exemple et le remplir :
+**ProfilsActifs** permet aux demandeurs d'emploi de se présenter en **vidéo** (au-delà du CV) et
+aux recruteurs de parcourir ces profils. Un **questionnaire de savoir-être** délivre un
+**badge de certification**. Le consentement à la diffusion de la vidéo est explicite et révocable
+(droit à l'effacement).
 
-```bash
-cp .env.example .env
-```
-
-| Variable            | Description                                   |
-| ------------------- | --------------------------------------------- |
-| `POSTGRES_USER`     | utilisateur PostgreSQL                         |
-| `POSTGRES_PASSWORD` | mot de passe PostgreSQL                        |
-| `POSTGRES_DB`       | nom de la base                                 |
-| `DATABASE_URL`      | DSN complet utilisé par le backend            |
-| `JWT_SECRET`        | secret de signature des tokens JWT            |
-| `PORT`              | port d'écoute du backend (def. `8080`)        |
-
-> `DATABASE_URL` doit rester cohérent avec les identifiants `POSTGRES_*`.
-
-## Lancer avec Docker (recommandé)
+## Lancer le projet
 
 ```bash
+cp .env.example .env      # renseigner POSTGRES_USER / POSTGRES_PASSWORD / POSTGRES_DB / JWT_SECRET
 docker compose up --build
 ```
 
-- Frontend : http://localhost:5173
-- Backend : http://localhost:8080 (health : `GET /health`)
-- PostgreSQL : `localhost:5432`
+| Service    | URL                            |
+| ---------- | ------------------------------ |
+| Interface  | http://localhost:5173          |
+| API        | http://localhost:8080          |
+| État API   | http://localhost:8080/health   |
 
-Compose n'applique pas les migrations automatiquement — voir la section Migrations.
+Arrêt : `docker compose down` (ajouter `-v` pour repartir d'une base vierge).
 
-Arrêter : `docker compose down` (ajouter `-v` pour supprimer le volume de données).
+La base est créée automatiquement au premier démarrage, le questionnaire est pré-rempli.
+Il suffit ensuite de **créer un compte** depuis l'interface.
 
-## Lancer manuellement
+## Utilisation
 
-### 1. Base de données
+1. **Inscription** — nom, e-mail, mot de passe, date de naissance (16 ans minimum).
+2. **Questionnaire** — 20 questions de savoir-être → un badge si le score est suffisant.
+3. **Ma vidéo** — coller un lien (YouTube, Vimeo…) ou téléverser un fichier, après avoir donné son consentement.
+4. **Candidats** — la liste et les fiches sont consultables publiquement.
 
-Démarrer un PostgreSQL local, puis appliquer les migrations avec
-[golang-migrate](https://github.com/golang-migrate/migrate) :
+## Documentation
 
-```bash
-go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@latest
-migrate -path database/migrations -database "$DATABASE_URL" up
-```
-
-La migration `000006_seed_fake_profiles` insère des comptes de démo.
-
-### 2. Backend
-
-```bash
-cd backend
-go mod download
-go run .            # ou : go build -o dist/profilsactifs-server . && ./dist/profilsactifs-server
-```
-
-Endpoints : `/`, `/health`, `/auth/register`, `/auth/login`.
-
-### 3. Frontend
-
-```bash
-cd frontend
-npm install
-npm run dev         # http://localhost:5173
-```
-
-## Build de production
-
-```bash
-# Backend
-cd backend && go build -o dist/profilsactifs-server .
-
-# Frontend
-cd frontend && npm run build     # sortie dans frontend/dist
-```
-
-## Migrations
-
-```bash
-migrate -path database/migrations -database "$DATABASE_URL" up      # appliquer
-migrate -path database/migrations -database "$DATABASE_URL" down 1  # revenir en arrière
-```
-
-## Tests
-
-```bash
-cd backend && go vet ./... && go test ./...
-```
-
-## CI
-
-`.github/workflows/build.yml` s'exécute sur push `dev` et PR vers `_access_test` :
-démarre un service PostgreSQL, applique les migrations, lance `go vet` / `go test`,
-compile le binaire et l'upload en artifact.
+| Document | Contenu |
+| --- | --- |
+| [devdoc.md](devdoc.md) | architecture, API, variables d'env, lancement manuel, build |
+| [SECURITE.md](SECURITE.md) | mesures de sécurité et limitations connues |
+| [TEST.md](TEST.md) | procédure de test |

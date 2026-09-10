@@ -1,0 +1,44 @@
+
+name: ci
+on:
+  push:
+  pull_request:
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: test
+          POSTGRES_PASSWORD: test
+          POSTGRES_DB: test
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U test" --health-interval 5s
+          --health-timeout 5s --health-retries 10
+    env:
+      POSTGRES_URL: postgres://test:test@localhost:5432/test?sslmode=disable
+      JWT_SECRET: test-secret
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with: { go-version: '1.26' }
+      - working-directory: backend
+        run: |
+          go vet ./...
+          go build ./...
+          go test ./... -v
+
+  frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: '22', cache: 'npm', cache-dependency-path: frontend/package-lock.json }
+      - working-directory: frontend
+        run: |
+          npm ci
+          npx vue-tsc -b
+          npm run build

@@ -44,6 +44,10 @@ func main() {
 		log.Fatal(err)
 	}
 
+	if err := db.SeedUsers(DB); err != nil {
+		log.Fatal(err)
+	}
+
 	if err := os.MkdirAll("uploads", 0o755); err != nil {
 		log.Fatal(err)
 	}
@@ -53,6 +57,7 @@ func main() {
 	router.HandleFunc("/", root)
 	router.HandleFunc("GET /health", healthCheck)
 
+	router.HandleFunc("GET /videos", requireAuth(getMyVideo))
 	router.HandleFunc("POST /videos", requireRole("candidate", uploadVideo))
 	router.Handle("GET /uploads/", http.StripPrefix("/uploads/", http.FileServer(http.Dir("uploads"))))
 

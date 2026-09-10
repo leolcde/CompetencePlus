@@ -42,10 +42,16 @@ func parseToken(req *http.Request) (uint, string, error) {
 	return uint(claims["sub"].(float64)), fmt.Sprint(claims["role"]), nil
 }
 
+func userExists(id uint) bool {
+	var count int64
+	DB.Model(&models.User{}).Where("id = ?", id).Count(&count)
+	return count > 0
+}
+
 func requireAuth(next http.HandlerFunc) http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
 		userID, _, err := parseToken(req)
-		if err != nil {
+		if err != nil || !userExists(userID) {
 			http.Error(res, "unauthorized", http.StatusUnauthorized)
 			return
 		}
@@ -57,7 +63,7 @@ func requireAuth(next http.HandlerFunc) http.HandlerFunc {
 func requireRole(role string, next http.HandlerFunc) http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
 		userID, r, err := parseToken(req)
-		if err != nil {
+		if err != nil || !userExists(userID) {
 			http.Error(res, "unauthorized", http.StatusUnauthorized)
 			return
 		}
